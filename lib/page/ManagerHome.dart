@@ -72,7 +72,7 @@ class _ManagerHomeState extends State<ManagerHome> {
 //      tabItems: _renderCustomTab(),//自定义，底部导航栏
       tabViews: _renderPage(),//中间显示的内容页面
       topPageControl: topPageControl,
-      backgroundColor: Colors.blue,//主题色
+      backgroundColor: Theme.of(context).primaryColor,//主题色
       title: new Text("PPMap"),
     );
   }

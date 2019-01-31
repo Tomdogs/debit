@@ -44,7 +44,7 @@ class _MinePageStateless extends State<MinePage> {
                     flex:1,
                     child: new Container(
                       decoration: new BoxDecoration(
-                        color: Colors.blue,
+                        color: Theme.of(context).primaryColor,
                       ),
                       child: new Center(
                         child: new Column(
@@ -97,19 +97,19 @@ class _MinePageStateless extends State<MinePage> {
                                     Icons.chevron_right, '/personInfo'),
                                 AppDivider.thinDivider(),
                                 new RowLayoutWidget(AppImage.getAssetIconFrom(userBorrow), "我的借贷",
-                                    Icons.chevron_right, '/personInfo'),
+                                    Icons.chevron_right, '/personDebit'),
                                 AppDivider.thinDivider(),
                                 new RowLayoutWidget(AppImage.getAssetIconFrom(userRepay), "我的还款",
-                                    Icons.chevron_right, '/personInfo'),
+                                    Icons.chevron_right, '/personRepayment'),
                                 AppDivider.thinDivider(),
                                 new RowLayoutWidget(AppImage.getAssetIconFrom(userInfo), "客服",
-                                    Icons.chevron_right, '/personInfo'),
+                                    Icons.chevron_right, '/personCustomerService'),
                                 AppDivider.thinDivider(),
                                 new RowLayoutWidget(AppImage.getAssetIconFrom(userPassword), "修改密码",
-                                    Icons.chevron_right, '/personInfo'),
+                                    Icons.chevron_right, '/personModifyPassword'),
                                 AppDivider.thinDivider(),
                                 new RowLayoutWidget(AppImage.getAssetIconFrom(userExit), "退出登录",
-                                    Icons.chevron_right, '/personInfo'),
+                                    Icons.chevron_right, '/personSignOut'),
                               ],
                             ),
                           ),

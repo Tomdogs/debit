@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 
 /**
  * 欢迎页
- * Created by guoshuyu
- * Date: 2018-07-16
+ *
  */
 
 class WelcomePage extends StatefulWidget {

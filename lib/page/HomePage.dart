@@ -112,7 +112,7 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                 flex: 2,
                 child: new Container(
                   decoration: new BoxDecoration(
-                    color: Colors.blue,
+                    color: Theme.of(context).primaryColor,
                   ),
 //                  height: 200.0,
                   padding: EdgeInsets.only(top: CommonUtils.sStaticBarHeight),
@@ -254,7 +254,7 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                           padding: EdgeInsets.all(10),
                           child: new RaisedButton(
                               textColor: Colors.white,
-                              color: Colors.blue,
+                              color: Theme.of(context).primaryColor,
                               child: new Flex(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 direction: Axis.horizontal,
