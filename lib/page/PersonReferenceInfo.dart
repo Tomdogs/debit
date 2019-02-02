@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:debit/common/config/Config.dart';
+import 'package:debit/common/dao/UserDao.dart';
+import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/utils/AppStyle.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/Toast.dart';
@@ -299,17 +303,45 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
       _formData.forEach((key,value){
         print(key+":"+value.toString());
       });
+      ///更新用户资料信息
+      UserDao.updateUserDataInfo(_formData).then((res){
+        String msg= res.data;
+        if(res.result){
+          Navigator.pop(context);
+          new Future.delayed(const Duration(seconds: 1), () {
+            Navigator.pushReplacementNamed(context, '/managerHome');
+            return true;
+          });
+        }else{
+          Toast.toast(context,msg);
+        }
+      });
 
     }else{
-//      final snackBar = new SnackBar(content: new Text('请填写完整表单！'));
-//      Scaffold.of(context).showSnackBar(snackBar);
       Toast.toast(context,'请填写完整表单！');
     }
   }
 
+  ///查询用户信息
+  void _getUserInfo(){
+    UserDao. getUserDataInfo()/*.then((res) {
+
+      *//*if (res.result) {
+        print("用户数据为1：${res.data}");
+        Map userDataMap = json.decode(res.data);
+        var userData = new UserData.fromJson(userDataMap);
+        print("查询用户的数据2：${userData.code},${userData.msg}");
+      }else{
+        String msg = res.data;
+        print("用户数据为3：${res.data}");
+        Toast.toast(context,msg);
+      }*//*
+      })*/;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
+    _getUserInfo();
     return new Scaffold(
         appBar: new AppBar(
           title: new Text('单位信息'),

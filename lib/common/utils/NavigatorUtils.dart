@@ -37,23 +37,6 @@ class NavigatorUtils {
     Navigator.push(context, new CupertinoPageRoute(builder: (context) => new PersonInfo()));
   }
 
-  ///仓库详情
-  static Future<Null> goReposDetail(BuildContext context, String userName, String reposName) {
-//    return Navigator.push(context, new CupertinoPageRoute(builder: (context) => new RepositoryDetailPage(userName, reposName)));
-  }
-
-
-
-  ///仓库详情通知
-  static Future<Null> goNotifyPage(BuildContext context) {
-//    return Navigator.push(context, new CupertinoPageRoute(builder: (context) => new NotifyPage()));
-  }
-
-  ///搜索
-  static Future<Null> goSearchPage(BuildContext context) {
-//    return Navigator.push(context, new CupertinoPageRoute(builder: (context) => new SearchPage()));
-  }
-
 
 
 }

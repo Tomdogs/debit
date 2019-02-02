@@ -1,4 +1,10 @@
+import 'package:debit/common/config/Config.dart';
+import 'package:debit/common/model/User.dart';
+import 'package:debit/common/redux/ReduxState.dart';
+import 'package:debit/common/redux/UserReducer.dart';
+import 'package:debit/common/utils/LocalStorage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 class RowLayoutWidget extends StatefulWidget {
   final Image leftIcon;
@@ -8,7 +14,7 @@ class RowLayoutWidget extends StatefulWidget {
   final IconData rightIcon;
   final String routeName;
 
-  RowLayoutWidget(this.leftIcon, this.topString,this.rightIcon, this.routeName,{this.bottomString, this.isShowRightString = true});
+  RowLayoutWidget(this.leftIcon, this.topString,this.rightIcon, {this.routeName,this.bottomString, this.isShowRightString = true});
 
   @override
   RowLayoutWidgetState createState() => new RowLayoutWidgetState();
@@ -17,7 +23,37 @@ class RowLayoutWidget extends StatefulWidget {
 class RowLayoutWidgetState extends State<RowLayoutWidget> {
   bool isClick = false;
 
-  Container buildContainer() {
+  Future<bool> _dialogSingOut(BuildContext context,store) {
+    return showDialog(
+        context: context,
+        builder: (context) => new AlertDialog(
+          title: new Text('退出登录'),
+          content: new Text('确定退出登录吗？'),
+          actions: <Widget>[
+            new FlatButton(onPressed: () => Navigator.of(context).pop(false), child: new Text('取消')),
+            new FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                  removeUserData(store);
+                },
+                child: new Text('确定'))
+          ],
+        ));
+  }
+  ///删除用户信息，退出登录
+  removeUserData(store) async{
+    await LocalStorage.remove(Config.USER_INFO);
+    await LocalStorage.remove(Config.USER_PHONE_KEY);
+    await LocalStorage.remove(Config.NET_ROOM_PW_KEY);
+    await LocalStorage.remove(Config.PW_KEY);
+    await LocalStorage.remove(Config.USER_ID_KEY);
+
+    store.dispatch(new UpdateUserAction(new User(null,null,netRoomPassword:null,userID: null)));
+
+
+  }
+
+  Container buildContainer(store) {
     return new Container(
 //        margin: const EdgeInsets.all(10.0),
         decoration: new BoxDecoration(
@@ -96,27 +132,34 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
             });
           },*/
           onPanDown: (DragDownDetails details) {
-            print("onPanDown");
             setState(() {
               isClick = true;
             });
           },
           onTapCancel: () {
-            print("onTapCancel");
             setState(() {
               isClick = false;
             });
           },
           onTapUp: (TapUpDetails details) {
-            print("松开");
             setState(() {
               isClick = false;
             });
           },
           onTap: () {
-            print("点击了吗？");
-            Navigator.pushNamed(context, widget.routeName);
-//            Navigator.of(context).pushNamed(routeName);
+            if(widget.routeName != null){
+
+              User user = store.state.userInfo;
+              print("store 中存储的：${user.phoneNumber}");
+              if(user.phoneNumber == null && user.userPassword == null){
+                Navigator.pushNamed(context, '/loginAndRegister');
+              }else{
+                Navigator.pushNamed(context, widget.routeName);
+              }
+
+            }else{
+              _dialogSingOut(context,store);
+            }
           },
 
           ///默认情况下透明区域不响应事件，加上这个属性就可以响应透明区域的事件
@@ -127,6 +170,9 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return buildContainer();
+    return new StoreBuilder<ReduxState>(
+        builder: (context, store) {
+          return buildContainer(store);
+    });
   }
 }

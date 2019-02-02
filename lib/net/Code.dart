@@ -15,6 +15,15 @@ class Code {
 
   static final EventBus eventBus = new EventBus();
 
+  ///成功
+  static const String STATUS_SUCCESS = '0';
+  ///失败
+  static const String STATUS_FAIL = '1';
+  ///系统异常
+  static const String STATUS_ERROR = '2';
+  ///数据为空
+  static const String STATUS_EMPTY = '3';
+
   static errorHandleFunction(code, message, noTip) {
     if(noTip) {
       return message;
