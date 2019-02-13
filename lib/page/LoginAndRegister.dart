@@ -138,7 +138,6 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
                                           context, '/managerHome');
                                     });
 
-
                                   }else if(res.data != null){
                                     Toast.toast(context, res.data.toString());
                                   }else{

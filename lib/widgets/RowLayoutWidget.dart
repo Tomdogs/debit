@@ -1,5 +1,7 @@
 import 'package:debit/common/config/Config.dart';
+import 'package:debit/common/dao/UserDao.dart';
 import 'package:debit/common/model/User.dart';
+import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/LocalStorage.dart';
@@ -13,8 +15,9 @@ class RowLayoutWidget extends StatefulWidget {
   final bool isShowRightString;
   final IconData rightIcon;
   final String routeName;
+  final int code;
 
-  RowLayoutWidget(this.leftIcon, this.topString,this.rightIcon, {this.routeName,this.bottomString, this.isShowRightString = true});
+  RowLayoutWidget(this.leftIcon, this.topString,this.rightIcon, {this.routeName,this.bottomString, this.isShowRightString = true,this.code = 0});
 
   @override
   RowLayoutWidgetState createState() => new RowLayoutWidgetState();
@@ -48,7 +51,7 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
     await LocalStorage.remove(Config.PW_KEY);
     await LocalStorage.remove(Config.USER_ID_KEY);
 
-    store.dispatch(new UpdateUserAction(new User(null,null,netRoomPassword:null,userID: null)));
+    store.dispatch(new UpdateUserAction(new User(phoneNumber:null,userPassword:null,netRoomPassword:null,userID: null,flagOne: 0,flagTwo: 0,flagThree: 0,flagFour: 0)));
 
 
   }
@@ -115,7 +118,7 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
                       children: <Widget>[
                         new Offstage(
                           offstage: widget.isShowRightString,
-                          child: new Text('不完整',style:new TextStyle(color: Colors.blue)),
+                          child: widget.code == 1?new Text('完整',style:new TextStyle(color: Colors.blue)):new Text('不完整',style:new TextStyle(color: Colors.red)),
                         ),
                         new Icon(widget.rightIcon, size: 25),
                       ],
@@ -150,6 +153,22 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
             if(widget.routeName != null){
 
               User user = store.state.userInfo;
+
+              UserDao.getUserById().then((res){
+                if(res != null && res.result) {
+                  Data data = res.data;
+                  User newUser = new User(userID: user.userID,
+                      phoneNumber: user.phoneNumber,
+                      userPassword: user.userPassword,
+                      flagOne: data.flagOne,
+                      flagTwo: data.flagTwo,
+                      flagThree: data.flagThree,
+                      flagFour: data.flagFour);
+                  store.dispatch(new UpdateUserAction(newUser));
+                }
+              });
+
+
               print("store 中存储的：${user.phoneNumber}");
               if(user.phoneNumber == null && user.userPassword == null){
                 Navigator.pushNamed(context, '/loginAndRegister');

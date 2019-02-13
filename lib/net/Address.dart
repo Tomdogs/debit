@@ -18,135 +18,77 @@ class Address {
     return "${host}/server/userManage/userRegidter";
   }
 
-  ///上传/更新用户资料信息
+  ///修改用户资料信息
   static getUpdateUserReferenceInfo(){
     return "${host}/server/userCenter/updateUserDataInfo";
   }
 
 
-  ///上传/更新用户资料信息
+  ///查询用户资料信息
   static getUserReferenceInfo(){
     return "${host}/server/userCenter/queryUserDataInfo";
   }
-  ///仓库路径下的内容 get
-  static reposDataDir(reposOwner, repos, path, [branch = 'master']) {
-    return "${host}repos/$reposOwner/$repos/contents/$path" + ((branch == null) ? "" : ("?ref=" + branch));
+
+
+  ///提交身份信息
+  static getSubmitUserIdentity(){
+    return "${host}/server/userCenter/submitUserIdentity";
   }
 
-  ///README 文件地址 get
-  static readmeFile(reposNameFullName, curBranch) {
-    return host + "repos/" + reposNameFullName + "/" + "readme" + ((curBranch == null) ? "" : ("?ref=" + curBranch));
+  ///查询用户信息
+  static getUserById(){
+    return "${host}/server/userManage/getUserById";
   }
 
-  ///我的用户信息 GET
-  static getMyUserInfo() {
-    return "${host}user";
+  ///用户修改密码
+  static getUpdatePassword(){
+    return "${host}/server/setCenter/updatePassword";
   }
 
-  ///用户信息 get
-  static getUserInfo(userName) {
-    return "${host}users/$userName";
+  ///用户登出
+  static getLogout(){
+    return "${host}/server/setCenter/logout";
   }
 
-  /// get 是否关注
-  static doFollow(name) {
-    return "${host}user/following/$name";
+  ///我的借款
+  static getTradingBorrowed(){
+    return "${host}/server/tradingCenter/getTradingBorrowed";
   }
 
-  ///用户关注 get
-  static getUserFollow(userName) {
-    return "${host}users/$userName/following";
+
+  ///我的还款
+  static getTradingReturn(){
+    return "${host}/server/tradingCenter/getTradingReturn";
   }
 
-  ///我的关注者 get
-  static getMyFollower() {
-    return "${host}user/followers";
+  ///贷款设置加载
+  static getTradingBorrowingQueryBase(){
+    return "${host}/server/tradingCenter/tradingBorrowingQueryBase";
   }
 
-  ///用户的关注者 get
-  static getUserFollower(userName) {
-    return "${host}users/$userName/followers";
+  ///提交收款银行卡信息
+  static getUserBankCardInfo(){
+    return "${host}/server/userCenter/userBankCardInfo";
   }
 
-  ///create fork post
-  static createFork(reposOwner, reposName) {
-    return "${host}repos/$reposOwner/$reposName/forks";
+  ///查询收款银行卡信息
+  static getQueryBankCardInfo(){
+    return "${host}/server/userCenter/queryBankCardInfo";
   }
 
-  ///branch get
-  static getbranches(reposOwner, reposName) {
-    return "${host}repos/$reposOwner/$reposName/branches";
+  ///手机号验证
+  static getUserPhoneNumberInfo(){
+    return "${host}/server/userCenter/userPhoneNumberInfo";
   }
 
-  ///fork get
-  static getForker(reposOwner, reposName, sort) {
-    sort ??= 'newest';
-    return "${host}repos/$reposOwner/$reposName/forks?sort=$sort";
+  ///查询手机号信息（用于数据回显）
+  static getQueryPhoneNumberInfo(){
+    return "${host}/server/userCenter/queryPhoneNumberInfo";
   }
 
-  ///readme get
-  static getReadme(reposOwner, reposName) {
-    return "${host}repos/$reposOwner/$reposName/readme";
+  ///用户借款
+  static getTradingBorrowingNow(){
+    return "${host}/server/tradingCenter/tradingBorrowingNow";
   }
 
-  ///用户收到的事件信息 get
-  static getEventReceived(userName) {
-    return "${host}users/$userName/received_events";
-  }
-
-  ///用户相关的事件信息 get
-  static getEvent(userName) {
-    return "${host}users/$userName/events";
-  }
-
-  ///组织成员
-  static getMember(orgs) {
-    return "${host}orgs/$orgs/members";
-  }
-
-  ///获取用户组织
-  static getUserOrgs(userName) {
-    return "${host}users/$userName/orgs";
-  }
-
-  ///通知 get
-  static getNotifation(all, participating) {
-    if ((all == null && participating == null) || (all == false && participating == false)) {
-      return "${host}notifications";
-    }
-    all ??= false;
-    participating ??= false;
-    return "${host}notifications?all=$all&participating=$participating";
-  }
-
-  ///patch
-  static setNotificationAsRead(threadId) {
-    return "${host}notifications/threads/$threadId";
-  }
-
-  ///put
-  static setAllNotificationAsRead() {
-    return "${host}notifications";
-  }
-
-  ///趋势 get
-  static trending(since, languageType) {
-    if (languageType != null) {
-      return "https://github.com/trending/$languageType?since=$since";
-    }
-    return "https://github.com/trending?since=$since";
-  }
-
-  ///处理分页参数
-  static getPageParams(tab, page, [pageSize = Config.PAGE_SIZE]) {
-    if (page != null) {
-      if (pageSize != null) {
-        return "${tab}page=$page&per_page=$pageSize";
-      } else {
-        return "${tab}page=$page";
-      }
-    } else {
-      return "";
-    }
-  }
 }

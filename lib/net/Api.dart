@@ -1,3 +1,5 @@
+import 'dart:_http';
+
 import 'package:debit/common/config/Config.dart';
 import 'package:debit/common/utils/LocalStorage.dart';
 import 'package:debit/net/Code.dart';
@@ -16,7 +18,7 @@ class HttpManager {
   ///[ params] 请求参数
   ///[ header] 外加头
   ///[ option] 配置
-  static netFetch(url, params, Map<String, String> header, Options option, {noTip = false}) async {
+  static netFetch(url, params, Map<String, String> header, Options option, {isJson =false,noTip = false}) async {
 
     //没有网络
     var connectivityResult = await (new Connectivity().checkConnectivity());
@@ -31,6 +33,10 @@ class HttpManager {
 
     if (option != null) {
       option.headers = headers;
+      if(!isJson){
+        option.contentType=ContentType.parse("application/x-www-form-urlencoded");
+      }
+//      option.contentType=ContentType.parse("multipart/form-data");
     } else{
       option = new Options(method: "get");
       option.headers = headers;
@@ -57,6 +63,7 @@ class HttpManager {
         print('请求异常: ' + e.toString());
         print('请求异常url: ' + url);
       }
+
       return new ResultData(Code.errorHandleFunction(errorResponse.statusCode, e.message, noTip), false, errorResponse.statusCode);
     }
 
@@ -72,7 +79,6 @@ class HttpManager {
 
     }
 
-    print('返回参数2: ' + response.statusCode.toString());
 
     try {
       if (option.contentType != null && option.contentType.primaryType == "text") {

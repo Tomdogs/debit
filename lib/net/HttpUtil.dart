@@ -69,4 +69,23 @@ class HttpUtil {
     }
     return response.data;
   }
+
+  //  /storage/emulated/0/Android/data/com.bat.debit/files/Pictures/
+  download(url, savePath,{data, options, cancelToken}) async {
+    print('下载文件! url：$url ,body: $data');
+    Response response;
+    try {
+      response = await dio.download(
+        url, savePath
+      );
+      print('下载文件!!response.data：${response.data}');
+      print('下载文件!!response.header：${response.headers}');
+    } on DioError catch (e) {
+      if (CancelToken.isCancel(e)) {
+        print('下载文件!请求取消! ' + e.message);
+      }
+      print('下载文件!请求发生错误：$e');
+    }
+    return response.data;
+  }
 }

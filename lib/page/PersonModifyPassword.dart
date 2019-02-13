@@ -1,9 +1,13 @@
+import 'package:debit/common/dao/UserDao.dart';
+import 'package:debit/common/model/User.dart';
+import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/utils/AppStyle.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/Toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 class PersonModifyPassword extends StatefulWidget {
   @override
@@ -15,22 +19,21 @@ class PersonModifyPassword extends StatefulWidget {
 class PersonModifyPasswordState extends State<PersonModifyPassword> {
 
   GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  static final String key0 = 'phoneNumber';
-  static final String key1 = 'pictureVerificationCode';
-  static final String key2 = 'messageVerificationCode';
-  static final String key3 = 'newPassword';
+  static final String key0 = 'userNetroomPhonenum';
+  static final String key1 = 'userNetroomPassword';
+  static final String key2 = 'userPassWord';
+  static final String keyID = 'userId';
 
   Map<String,dynamic> _formData = {
     key0:null,
     key1:null,
     key2:null,
-    key3:null,
+    keyID:null
   };
   Map<String,TextEditingController> textController = {
     key0: new TextEditingController(),
     key1: new TextEditingController(),
     key2: new TextEditingController(),
-    key3: new TextEditingController(),
   };
 
   bool isCheck = true;
@@ -87,7 +90,7 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
     );
   }
 
-  void _formSubmitted() {
+  void _formSubmitted(store) {
     var _form = _formKey.currentState;
     print("form状态：${_form.validate()}");
 
@@ -99,6 +102,22 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
 
       _formData.forEach((key,value){
         print(key+":"+value.toString());
+      });
+
+      User user = store.state.userInfo;
+      _formData[keyID] = user.userID;
+
+      UserDao.getUpdatePassword(_formData).then((res){
+        String msg= res.data;
+        if(res.result){
+          Navigator.pop(context);
+          new Future.delayed(const Duration(seconds: 1), () {
+            Navigator.pushReplacementNamed(context, '/managerHome');
+            return true;
+          });
+        }else{
+          Toast.toast(context,msg);
+        }
       });
 
     }else{
@@ -116,39 +135,43 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
           title: new Text('修改密码'),
           centerTitle: true,
         ),
-        body: new Container(
-          decoration: BoxDecoration(color: AppColors.backgroundColor),
-          child: new ListView(
-            children: <Widget>[
-              new Form(
-                key: _formKey,
-                child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    new Padding(padding: EdgeInsets.only(top: 10)),
+        body: new StoreBuilder<ReduxState>(
+          builder: (context,store){
+            return new Container(
+              decoration: BoxDecoration(color: AppColors.backgroundColor),
+              child: new ListView(
+                children: <Widget>[
+                  new Form(
+                    key: _formKey,
+                    child: new Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        new Padding(padding: EdgeInsets.only(top: 10)),
 
-                    formWidget('手机号码', '请输入手机号码', key0),
-                    formWidget('图片验证码', '请输入图片验证码', key1),
-                    formWidget('短信验证', '请输入验证码', key2),
-                    formWidget('新密码', '请设置6-16位密码', key3),
+                        formWidget('手机号码', '请输入手机号码', key0),
+//                    formWidget('图片验证码', '请输入图片验证码', key1),
+                        formWidget('短信验证', '请输入验证码', key1),
+                        formWidget('新密码', '请设置6-16位密码', key2),
 
-                    new Padding(padding: EdgeInsets.all(20.0)),
-                    new Container(
-                      margin: EdgeInsets.all(10),
-                      child: new FlexButton(
-                        textColor: Colors.white,
-                        color: Theme.of(context).primaryColor,
-                        text: "完成",
-                        onPress: () {
-                          _formSubmitted();
-                        },
-                      ),
+                        new Padding(padding: EdgeInsets.all(20.0)),
+                        new Container(
+                          margin: EdgeInsets.all(10),
+                          child: new FlexButton(
+                            textColor: Colors.white,
+                            color: Theme.of(context).primaryColor,
+                            text: "完成",
+                            onPress: () {
+                              _formSubmitted(store);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          }
         )
     );
   }

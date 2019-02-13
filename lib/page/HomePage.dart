@@ -1,14 +1,21 @@
+import 'package:debit/common/dao/DaoResult.dart';
+import 'package:debit/common/dao/UserDao.dart';
+import 'package:debit/common/model/BorrowSetting.dart';
 import 'package:debit/common/model/User.dart';
+import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/redux/ReduxState.dart';
+import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/AppStyle.dart';
 import 'package:debit/common/utils/CommonUtils.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/ImagePickerWidget.dart';
+import 'package:debit/widgets/Toast.dart';
 import 'package:debit/widgets/city_picker.dart';
 import 'package:debit/widgets/marquee/index.dart';
 import 'package:debit/widgets/seekbar/progress_value.dart';
 import 'package:debit/widgets/seekbar/section_text_model.dart';
 import 'package:debit/widgets/seekbar/seekbar.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -26,15 +33,37 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
   @override
   void initState() {
     super.initState();
+
+    UserDao.getTradingBorrowingQueryBase().then((res){
+      DataLoadSet dataLoadSet = res.data;
+
+      print("贷款设置加载 ${dataLoadSet.loadMin}");
+      print("贷款设置加载 ${dataLoadSet.loadMax}");
+      print("贷款设置加载 ${dataLoadSet.loadSelectDays}");
+      print("贷款设置加载 ${dataLoadSet.loadServicesExpenses}");
+      print("贷款设置加载 ${dataLoadSet.status}");
+
+      setState(() {
+        loadMin = double.parse(dataLoadSet.loadMin);
+        loadMax = double.parse(dataLoadSet.loadMax);
+
+        print("贷款设置加载1 ${loadMin}");
+        print("贷款设置加载2 ${loadMax}");
+      });
+    });
+
+
   }
 
   double money = 10000;
   int _radioValue = 0;
   double days = 3;
-  double rate = 0.0005;
+  double rate = 0.07;
   double interest = 0;
   double countMoney = 0;
   static Color redColor = Colors.red;
+  double loadMin = 10000.0;
+  double loadMax = 150000.0;
 
 
   Map<int,Color> _color ={
@@ -120,6 +149,54 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
     );
   }
 
+//  FormData formData = new FormData.from({});
+  Map<String,dynamic> _formData;
+
+  verificationInfo(user) async{
+    await UserDao.getUserById().then((res){
+      if(res != null && res.result){
+        Data data = res.data;
+        if(data.flagOne == 1 && data.flagTwo == 1 && data.flagThree == 1 && data.flagFour == 1){
+
+          _formData = {
+            "usermanageid":user.userID,
+            "orderBorrowMoney":money.floor(),
+            "orderBorrowUse":"APP借款",
+            "orderRefundFigure": countMoney.floor(),
+            "orderType":1//订单类型 1 借款订单 2 还款订单
+          };
+          return new DataResult(null, true);
+        }else{
+          Toast.toast(context, "请将资料填写完整！");
+          Navigator.pushNamed(context, '/personInfo');
+          return new DataResult(null, false);
+        }
+      }else{
+        Toast.toast(context, "请求失败！");
+        return new DataResult(null, false);
+      }
+    });
+  }
+  borrowNow(formData)async{
+    await UserDao.getTradingBorrowingNow(formData).then((res){
+      if(res != null && res.result){
+
+        Toast.toast(context, "借款成功!");
+
+        Navigator.pop(context);
+        new Future.delayed(const Duration(seconds: 1), () {
+          Navigator.pushReplacementNamed(context, '/managerHome');
+//          return true;
+        });
+        return true;
+      }else{
+        Toast.toast(context, res.data);
+        return false;
+      }
+
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -129,9 +206,13 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
     interest = money*rate*days*30;
     countMoney = money + interest;
 
-    return new StoreConnector<ReduxState,User>(
-      converter: (store) => store.state.userInfo,
-      builder: (context,user){
+    /**
+     * return new StoreConnector<ReduxState,User>(
+        converter: (store) => store.state.userInfo,
+        builder: (context,user){
+     */
+    return new StoreBuilder<ReduxState>(
+      builder: (context,store){
         return new Scaffold(
           body: new Container(
               decoration: new BoxDecoration(color: AppColors.backgroundColor),
@@ -160,8 +241,8 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                     color: Colors.white, fontSize: 40)),
                             new Padding(padding: EdgeInsets.only(top: 10)),
                             new SeekBar(
-                              min: 10000,
-                              max: 150000,
+                              min: loadMin,
+                              max: loadMax,
                               backgroundColor: Colors.grey,
                               progressColor: Colors.red,
                               progresseight: 20,
@@ -253,14 +334,14 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                       flex:1,
                                       child:  new Container(
                                         alignment: Alignment.centerRight,
-                                        child: new Text('${countMoney.toString()}元',style: new TextStyle(fontSize: 15),),
+                                        child: new Text('${countMoney.floor()}元',style: new TextStyle(fontSize: 15),),
                                       )
                                     ),
                                     new Expanded(
                                         flex:2,
                                         child:  new Container(
 //                                            alignment: Alignment.centerRight,
-                                            child: new Text('(含日利率$rate% ￥$interest元)',style: new TextStyle(fontSize: 10),)
+                                            child: new Text('(含日利率$rate% ￥${interest.floor()}元)',style: new TextStyle(fontSize: 10),)
                                         )
                                     ),
                                   ],
@@ -316,8 +397,65 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                       children: <Widget>[new Text('立即借款', style: new TextStyle(fontSize: 20), maxLines: 1, overflow:TextOverflow.ellipsis)],
                                     ),
                                     onPressed: () {
+                                      User user = store.state.userInfo;
                                       if(user.phoneNumber == null && user.userPassword == null){
                                         Navigator.pushNamed(context, '/loginAndRegister');
+                                      }else{
+
+
+
+                                       /* new Future(() => verificationInfo(user))
+                                            .then((m) {
+                                              print("m的值为：$m");
+                                              borrowNow(_formData);
+                                            });*/
+
+                                       /* new Future(() => null)
+                                            .then((n) {
+                                              verificationInfo(user);
+                                            })
+                                            .then((m){
+                                              print("m的值为：$m");
+                                              borrowNow(_formData);
+                                            });*/
+
+                                        /*verificationInfo(user).then((res2){
+                                          print("多线程问题：$res2");
+                                          if(res2.result){
+                                            borrowNow(_formData);
+                                            print("多线程问题2：$res2");
+                                          }
+                                        });*/
+                                        /*Future f1 = new Future(() => null);
+                                        Future f2 = new Future(() => null);
+                                        f1.then((_)=>verificationInfo(user));
+                                        f2.then((_)=>borrowNow(_formData));*/
+
+
+
+                                        UserDao.getUserById().then((res){
+                                          if(res != null && res.result){
+                                            Data data = res.data;
+                                            User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,flagOne: data.flagOne,flagTwo: data.flagTwo,flagThree: data.flagThree,flagFour: data.flagFour);
+                                            store.dispatch(new UpdateUserAction(newUser));
+                                            if(data.flagOne == 1 && data.flagTwo == 1 && data.flagThree == 1 && data.flagFour == 1){
+
+                                              _formData = {
+                                                "usermanageid":user.userID,
+                                                "orderBorrowMoney":money.floor(),
+                                                "orderBorrowUse":"APP借款",
+                                                "orderRefundFigure": countMoney.floor(),
+                                                "orderType":1//订单类型 1 借款订单 2 还款订单
+                                              };
+
+                                              borrowNow(_formData);
+                                            }else{
+                                              Toast.toast(context, "请将资料填写完整！");
+                                              Navigator.pushNamed(context, '/personInfo');
+                                            }
+                                          }
+                                        });
+
                                       }
                                     }
                                 ),

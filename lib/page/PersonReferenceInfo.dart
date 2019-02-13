@@ -2,13 +2,17 @@ import 'dart:convert';
 
 import 'package:debit/common/config/Config.dart';
 import 'package:debit/common/dao/UserDao.dart';
+import 'package:debit/common/model/User.dart';
 import 'package:debit/common/model/UserData.dart';
+import 'package:debit/common/redux/ReduxState.dart';
+import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/AppStyle.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/Toast.dart';
 import 'package:debit/widgets/city_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 class PersonReferenceInfo extends StatefulWidget {
   @override
@@ -21,21 +25,22 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
 
   GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
 
-  static final String key0 = 'companyName';
-  static final String key1 = 'companyProfession';
-  static final String key2 = 'companyPhoneNumber';
-  static final String key3 = 'workingYears';
-  static final String key4 = 'companyPosition';
-  static final String key5 = 'companyDetailPosition';
-  static final String key6 = 'wages';
-  static final String key7 = 'nowAddress';
-  static final String key8 = 'nowDetailAdress';
-  static final String key9 = 'relationName';
-  static final String key10 = 'relationPhoneNumber';
-  static final String key11 = 'relationShip';
-  static final String key12 = 'otherRelationName';
-  static final String key13 = 'otherRelationPhoneNumber';
-  static final String key14 = 'otherRlationship';
+  static final String key0 = 'unitName';
+  static final String key1 = 'unitPosition';
+  static final String key2 = 'unitPhoneNumber';
+  static final String key3 = 'unitWorkAges';
+  static final String key4 = 'unitAddress';
+  static final String key5 = 'unitDetailAdress';
+  static final String key6 = 'unitMonthlyIncome';
+  static final String key7 = 'unitLifeAddress';
+  static final String key8 = 'unitDetailLifeAddress';
+  static final String key9 = 'immediateName';
+  static final String key10 = 'immediatePhoneNumber';
+  static final String key11 = 'immediateRelation';
+  static final String key12 = 'otherName';
+  static final String key13 = 'otherPhoneNumber';
+  static final String key14 = 'otherRelation';
+  static final String keyID = 'id';
 
   Map<String,TextEditingController> textController ={
     key0:new TextEditingController(),
@@ -70,6 +75,7 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
     key12:null,
     key13:null,
     key14:null,
+    keyID:null,
 
   };
 
@@ -105,6 +111,7 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
                   enabled: true,
                   enableInteractiveSelection: true,
                   controller: textController[key],
+//                  initialValue: _formData[key],
                   decoration: new InputDecoration(
                     hintText: desc,
                   ),
@@ -284,16 +291,24 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
 
 
 
-  void _formSubmitted() {
+  void _formSubmitted(store) {
     var _form = _formKey.currentState;
     print("form状态：${_form.validate()}");
     bool validateFromSelect;
     ///检验 城市区域 和 人际关系 是否进行了设置
-    if(_formData[key4] == null || _formData[key7] == null || _formData[key11] == null || _formData[key14] == null){
+    /*if(_formData[key4] == null || _formData[key7] == null || _formData[key11] == null || _formData[key14] == null){
       validateFromSelect = false;
     }else{
       validateFromSelect = true;
+    }*/
+    for(int i=0;i<15;i++){
+      if(textController[key0].text != null){
+        validateFromSelect = true;
+      }else{
+        validateFromSelect = false;
+      }
     }
+
     if (_form.validate() && validateFromSelect) {
       _form.save();
 
@@ -303,6 +318,8 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
       _formData.forEach((key,value){
         print(key+":"+value.toString());
       });
+      User user = store.state.userInfo;
+      _formData[keyID] = user.userID;
       ///更新用户资料信息
       UserDao.updateUserDataInfo(_formData).then((res){
         String msg= res.data;
@@ -312,6 +329,12 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
             Navigator.pushReplacementNamed(context, '/managerHome');
             return true;
           });
+
+          User user = store.state.userInfo;
+          User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,
+              flagOne: user.flagOne,flagTwo: 1,flagThree: user.flagThree,flagFour: user.flagFour);
+          store.dispatch(new UpdateUserAction(newUser));
+
         }else{
           Toast.toast(context,msg);
         }
@@ -322,102 +345,134 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
     }
   }
 
-  ///查询用户信息
-  void _getUserInfo(){
-    UserDao. getUserDataInfo()/*.then((res) {
 
-      *//*if (res.result) {
-        print("用户数据为1：${res.data}");
-        Map userDataMap = json.decode(res.data);
-        var userData = new UserData.fromJson(userDataMap);
-        print("查询用户的数据2：${userData.code},${userData.msg}");
-      }else{
+  ///查询用户信息,如果以前有信息就按以前的填写
+  void _getUserInfo(){
+    UserDao. getUserDataInfo().then((res) {
+      if (res.result) {
+        Data data = res.data;
+///_formData[key4] == null || _formData[key7] == null || _formData[key11] == null || _formData[key14] == null
+        textController[key0].text = data.unitName;
+        textController[key1].text = data.unitPosition;
+        textController[key2].text = data.unitPhoneNumber;
+        textController[key3].text = data.unitWorkAges;
+        textController[key4].text = data.unitAddress;
+        textController[key5].text = data.unitDetailAdress;
+        textController[key6].text = data.unitMonthlyIncome;
+        textController[key7].text = data.unitLifeAddress;
+        textController[key8].text = data.unitDetailLifeAddress;
+        textController[key9].text = data.immediateName;
+        textController[key10].text = data.immediatePhoneNumber;
+        textController[key11].text = data.immediateRelation;
+        textController[key12].text = data.otherName;
+        textController[key13].text = data.otherPhoneNumber;
+        textController[key14].text = data.otherRelation;
+
+       /* _formData[key4] =  data.unitAddress;
+        _formData[key7] = data.unitLifeAddress;
+        _formData[key11] = data.immediateRelation;
+        _formData[key14] = data.otherRelation;*/
+        }else{
         String msg = res.data;
         print("用户数据为3：${res.data}");
         Toast.toast(context,msg);
-      }*//*
-      })*/;
+      }
+      });
   }
+
+  bool isFirst = false;
 
   @override
   Widget build(BuildContext context) {
-    _getUserInfo();
+    if(!isFirst){
+      _getUserInfo();
+      isFirst = true;
+    }
+    _formData[key4] =  textController[key4].text;
+    _formData[key7] = textController[key7].text;
+    _formData[key11] = textController[key11].text;
+    _formData[key14] = textController[key14].text;
+
     return new Scaffold(
         appBar: new AppBar(
           title: new Text('单位信息'),
           centerTitle: true,
         ),
-        body: new ListView(
-          children: <Widget>[
-            new Container(
-              decoration: BoxDecoration(color: AppColors.backgroundColor),
-              child: new Form(
-                key: _formKey,
-                  child: new Column(
-                    children: <Widget>[
-                      /*new Padding(
+        body: new StoreBuilder<ReduxState>(
+          builder: (context,store){
+            return new ListView(
+              children: <Widget>[
+                new Container(
+                  decoration: BoxDecoration(color: AppColors.backgroundColor),
+                  child: new Form(
+                      key: _formKey,
+                      child: new Column(
+                        children: <Widget>[
+                          /*new Padding(
                         padding: EdgeInsets.only(top:10),
                       ),*/
-                      new Container(
-                        padding: new EdgeInsets.all(10.0),
-                        alignment: Alignment.center,
-                        child: new Column(
-                          children: <Widget>[
-                            new Text("填写真实有效的信息，审核才会通过哦~")
-                          ],
-                        ),
-                      ),
-                      formWidget('单位名称','请输入单位名称',key0),
-                      formWidget('公司职位','请输入公司职位',key1),
-                      formWidget('单位电话','号码加区号',key2),
-                      formWidget('工作年龄(年)','请输入工作年龄',key3),
-                      formWidget2('单位地址','请选择省市区',key4),
-                      formWidget('详细地址','例：东北大学东三寝室楼6A888',key5),
-                      formWidget('月收入(元)','请输入现在工作月收入',key6),
-                      formWidget2('现居住地址','请选择省市区',key7),
-                      formWidget('详细地址','例：东北大学东三寝室楼6A888',key8),
-                      new Container(
-                        padding: new EdgeInsets.all(10.0),
-                        alignment: Alignment.center,
-                        child: new Column(
-                          children: <Widget>[
-                            new Text("直系亲属联系人")
-                          ],
-                        ),
-                      ),
-                      formWidget('姓名','请输入联系人姓名',key9),
-                      formWidget('手机号','请输入手机号',key10),
-                      formWidget3('关系','请选择关系',key11),
-                      new Container(
-                        padding: new EdgeInsets.all(10.0),
-                        alignment: Alignment.center,
-                        child: new Column(
-                          children: <Widget>[
+                          new Container(
+                            padding: new EdgeInsets.all(10.0),
+                            alignment: Alignment.center,
+                            child: new Column(
+                              children: <Widget>[
+                                new Text("填写真实有效的信息，审核才会通过哦~")
+                              ],
+                            ),
+                          ),
+                          formWidget('单位名称','请输入单位名称',key0),
+                          formWidget('公司职位','请输入公司职位',key1),
+                          formWidget('单位电话','号码加区号',key2),
+                          formWidget('工作年龄(年)','请输入工作年龄',key3),
+                          formWidget2('单位地址','请选择省市区',key4),
+                          formWidget('详细地址','例：东北大学东三寝室楼6A888',key5),
+                          formWidget('月收入(元)','请输入现在工作月收入',key6),
+                          formWidget2('现居住地址','请选择省市区',key7),
+                          formWidget('详细地址','例：东北大学东三寝室楼6A888',key8),
+                          new Container(
+                            padding: new EdgeInsets.all(10.0),
+                            alignment: Alignment.center,
+                            child: new Column(
+                              children: <Widget>[
+                                new Text("直系亲属联系人")
+                              ],
+                            ),
+                          ),
+                          formWidget('姓名','请输入联系人姓名',key9),
+                          formWidget('手机号','请输入手机号',key10),
+                          formWidget3('关系','请选择关系',key11),
+                          new Container(
+                            padding: new EdgeInsets.all(10.0),
+                            alignment: Alignment.center,
+                            child: new Column(
+                              children: <Widget>[
 
-                            new Text("其他联系人")
-                          ],
-                        ),
-                      ),
-                      formWidget('姓名','请输入联系人姓名',key12),
-                      formWidget('手机号','请输入手机号',key13),
-                      formWidget3('关系','请选择关系',key14),
-                      new Padding(padding: EdgeInsets.all(20.0)),
-                      new Container(
-                        margin: EdgeInsets.all(10),
-                        child: new FlexButton(
-                          textColor: Colors.white,
-                          color: Theme.of(context).primaryColor,
-                          text: "提交",
-                          onPress: () {
-                            _formSubmitted();
-                          },
-                        ),
-                      ),
-                    ],
-                  )
-              ),
-            )
-          ],
+                                new Text("其他联系人")
+                              ],
+                            ),
+                          ),
+                          formWidget('姓名','请输入联系人姓名',key12),
+                          formWidget('手机号','请输入手机号',key13),
+                          formWidget3('关系','请选择关系',key14),
+                          new Padding(padding: EdgeInsets.all(20.0)),
+                          new Container(
+                            margin: EdgeInsets.all(10),
+                            child: new FlexButton(
+                              textColor: Colors.white,
+                              color: Theme.of(context).primaryColor,
+                              text: "提交",
+                              onPress: () {
+                                _formSubmitted(store);
+                              },
+                            ),
+                          ),
+                        ],
+                      )
+                  ),
+                )
+              ],
+            );
+          },
         )
     );
   }

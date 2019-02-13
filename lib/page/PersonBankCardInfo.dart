@@ -1,8 +1,15 @@
+import 'package:debit/common/dao/UserDao.dart';
+import 'package:debit/common/model/User.dart';
+import 'package:debit/common/model/UserBorrowRepay.dart';
+import 'package:debit/common/model/UserData.dart';
+import 'package:debit/common/redux/ReduxState.dart';
+import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/AppStyle.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/Toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 class PersonBankCardInfo extends StatefulWidget {
   @override
@@ -14,20 +21,24 @@ class PersonBankCardInfo extends StatefulWidget {
 class PersonBankCardInfoState extends State<PersonBankCardInfo> {
 
   GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  static final String key0 = 'name';
-  static final String key1 = 'identityCardNumber';
-  static final String key2 = 'bank';
+  static final String key0 = 'bankCardUsername';
+  static final String key1 = 'bankCardIdcard';
+  static final String key2 = 'bankCardBankName';
   static final String key3 = 'bankCardNumber';
+  static final String keyID = 'userId';
 
   Map<String,dynamic> _formData = {
     key0:null,
     key1:null,
     key2:null,
+    key3:null,
+    keyID:null,
   };
   Map<String,TextEditingController> textController = {
     key0: new TextEditingController(),
     key1: new TextEditingController(),
     key2: new TextEditingController(),
+    key3: new TextEditingController(),
   };
   FocusNode _focusNode = new FocusNode();
 
@@ -170,7 +181,7 @@ class PersonBankCardInfoState extends State<PersonBankCardInfo> {
   }
 
 
-  void _formSubmitted() {
+  void _formSubmitted(store) {
     var _form = _formKey.currentState;
     print("form状态：${_form.validate()}");
     bool validateFromSelect;
@@ -190,61 +201,107 @@ class PersonBankCardInfoState extends State<PersonBankCardInfo> {
         print(key+":"+value.toString());
       });
 
+      User user = store.state.userInfo;
+      _formData[keyID] = user.userID;
+      UserDao.getUserBankCardInfo(_formData).then((res){
+        String msg= res.data;
+        if(res.result){
+          Navigator.pop(context);
+          new Future.delayed(const Duration(seconds: 1), () {
+            Navigator.pushReplacementNamed(context, '/managerHome');
+            return true;
+          });
+          User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,
+              flagOne: user.flagOne,flagTwo: user.flagTwo,flagThree: 1,flagFour: user.flagFour);
+          store.dispatch(new UpdateUserAction(newUser));
+        }else{
+          Toast.toast(context,msg);
+        }
+      });
+
     }else{
       Toast.toast(context,'请填写完整表单！');
     }
   }
 
+  void _getBankCardInfo(){
+    UserDao. getQueryBankCardInfo().then((res) {
+      if (res.result) {
+        Data data = res.data;
+        textController[key0].text = data.bankCardUsername;
+        textController[key1].text = data.bankCardIdcard;
+        textController[key2].text = data.bankCardBankName;
+        textController[key3].text = data.bankCardNumber;
+      }else{
+        String msg = res.data;
+        Toast.toast(context,msg);
+      }
+    });
+  }
+
+  bool isFirst = false;
+
   @override
   Widget build(BuildContext context) {
+    if(!isFirst){
+      _getBankCardInfo();
+      isFirst = true;
+    }
+    _formData[key2] =  textController[key2].text;
+
+
     return new Scaffold(
         appBar: new AppBar(
           title: new Text('收款银行卡'),
           centerTitle: true,
         ),
-        body: new Container(
-          decoration: BoxDecoration(color: AppColors.backgroundColor),
-          child: new ListView(
-            children: <Widget>[
-              new Form(
-                key: _formKey,
-                child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    new Padding(padding: EdgeInsets.only(top: 10)),
-                    formWidget('持卡人姓名', '请输入持卡人的姓名', key0),
-                    formWidget('持卡人身份证号', '请输入持卡人身份证号', key1),
-                    new Padding(padding: EdgeInsets.only(top: 20)),
-                    formWidget2('开户银行', '请选择开户银行', key2),
-                    formWidget('银行卡号', '请输入银行卡号', key3),
-                    new Container(
-                      padding: new EdgeInsets.only(left:10,top: 10),
-                      child: new Column(
+        body: new StoreBuilder<ReduxState>(
+          builder: (context,store){
+            return new Container(
+              decoration: BoxDecoration(color: AppColors.backgroundColor),
+              child: new ListView(
+                children: <Widget>[
+                  new Form(
+                    key: _formKey,
+                    child: new Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        new Padding(padding: EdgeInsets.only(top: 10)),
+                        formWidget('持卡人姓名', '请输入持卡人的姓名', key0),
+                        formWidget('持卡人身份证号', '请输入持卡人身份证号', key1),
+                        new Padding(padding: EdgeInsets.only(top: 20)),
+                        formWidget2('开户银行', '请选择开户银行', key2),
+                        formWidget('银行卡号', '请输入银行卡号', key3),
+                        new Container(
+                          padding: new EdgeInsets.only(left:10,top: 10),
+                          child: new Column(
 //                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          new Text("温馨提示:",style: new TextStyle(color: Colors.black45),),
-                          new Text("填写的银行卡须是本人名下的借记卡(储蓄卡)！",style: new TextStyle(color: Colors.black45))
-                        ],
-                      ),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              new Text("温馨提示:",style: new TextStyle(color: Colors.black45),),
+                              new Text("填写的银行卡须是本人名下的借记卡(储蓄卡)！",style: new TextStyle(color: Colors.black45))
+                            ],
+                          ),
+                        ),
+                        new Padding(padding: EdgeInsets.all(20.0)),
+                        new Container(
+                          margin: EdgeInsets.all(10),
+                          child: new FlexButton(
+                            textColor: Colors.white,
+                            color: Theme.of(context).primaryColor,
+                            text: "提交",
+                            onPress: () {
+                              _formSubmitted(store);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    new Padding(padding: EdgeInsets.all(20.0)),
-                    new Container(
-                      margin: EdgeInsets.all(10),
-                      child: new FlexButton(
-                        textColor: Colors.white,
-                        color: Theme.of(context).primaryColor,
-                        text: "提交",
-                        onPress: () {
-                          _formSubmitted();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         )
     );
   }

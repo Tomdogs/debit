@@ -21,6 +21,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+//  String url = 'http://c105.pop800.com/web800/c.do?n=428632&type=1&url=http%3A%2F%2Ft5k7m4x2.gotoip3.com%2Findex.php%3Fm%3DHelp%26a%3Dindex&l=cn&at=0';
   String url = 'http://c105.pop800.com/web800/c.do?n=428632&type=1&url=http%3A%2F%2Ft5k7m4x2.gotoip3.com%2Findex.php%3Fm%3DHelp%26a%3Dindex&l=cn&at=0';
 
   final store = new Store<ReduxState>(
