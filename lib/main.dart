@@ -6,6 +6,7 @@ import 'package:debit/page/ManagerHome.dart';
 import 'package:debit/page/PersonBankCardInfo.dart';
 import 'package:debit/page/PersonBasicInfo.dart';
 import 'package:debit/page/PersonCustomerService.dart';
+import 'package:debit/page/PersonCustomerService2.dart';
 import 'package:debit/page/PersonDebit.dart';
 import 'package:debit/page/PersonInfo.dart';
 import 'package:debit/page/PersonModifyPassword.dart';
@@ -41,7 +42,7 @@ class MyApp extends StatelessWidget {
       child:new StoreBuilder<ReduxState>(builder:(context,store){
         return MaterialApp(
           theme: ThemeData(
-            primarySwatch: Colors.blueGrey,///整个APP的默认颜色
+            primarySwatch: Colors.green,///整个APP的默认颜色
             backgroundColor: AppColors.backgroundColor,
           ),
           routes: <String,WidgetBuilder>{
@@ -54,7 +55,8 @@ class MyApp extends StatelessWidget {
             '/personReferenceInfo':(BuildContext context) => new PersonReferenceInfo(),
             '/personBankCardInfo':(BuildContext context) => new PersonBankCardInfo(),
             '/personPhoneNumber':(BuildContext context) => new PersonPhoneNumber(),
-            '/personCustomerService':(BuildContext context) => new PersonCustomerService(url,'客服'),
+//            '/personCustomerService':(BuildContext context) => new PersonCustomerService(url,'客服'),
+            '/personCustomerService':(BuildContext context) => new PersonCustomerService2(),
             '/personModifyPassword':(BuildContext context) => new PersonModifyPassword(),
             '/personDebit':(BuildContext context) => new PersonDebit(),
             '/personRepayment':(BuildContext context) => new PersonRepayment(),

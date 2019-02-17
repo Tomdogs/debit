@@ -23,16 +23,18 @@ dependencies:
   dio: ^1.0.6
   connectivity: ^0.3.1
   # camera: 0.2.9+1
-  image_picker: 0.4.12
+  image_picker: ^0.4.10
   flutter_statusbar: ^0.0.1
-  flutter_webview_plugin: ^0.2.1+2
+  flutter_webview_plugin: ^0.3.0+2
 
   event_bus:  ^1.0.1
   flutter_redux: ^0.5.3
 
   json_annotation: ^2.0.0
   path_provider: ^0.4.1
-  permission_handler: 2.1.0
+  #permission_handler: 2.1.0
+  flutter_spinkit: ^3.1.0
+  cached_network_image: ^0.5.1
 
 
 dev_dependencies:
@@ -104,6 +106,12 @@ flutter:
     - assets/images/my_basic_IDCard_opposite.png
     - assets/images/my_basic_IDCard_positive.png
     - assets/images/other.png
+    - assets/images/ic_nav_my_normal.png
+    - assets/images/ic_nav_my_pressed.png
+    - assets/images/ic_nav_tweet_actived.png
+    - assets/images/ic_nav_tweet_normal.png
+    - assets/images/guidePage.png
+
 
     # province data
     - assets/data/province.json

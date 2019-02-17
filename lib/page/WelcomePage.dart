@@ -57,7 +57,7 @@ class _WelcomePageState extends State<WelcomePage>  {
     return new Container(
       color: Colors.white,
       child: new Center(
-        child: new Text("欢迎您"),
+        child: new Image.asset('assets/images/guidePage.png'),
       ),
     );
   }

@@ -1,13 +1,17 @@
-import 'dart:_http';
 
+import 'dart:io';
 import 'package:debit/common/config/Config.dart';
-import 'package:debit/common/utils/LocalStorage.dart';
 import 'package:debit/net/Code.dart';
 import 'package:debit/net/ResultData.dart';
+import 'package:debit/widgets/Toast.dart';
 import 'package:dio/dio.dart';
 import 'dart:collection';
 import 'package:connectivity/connectivity.dart';
+import 'package:path/path.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
+///I replaced `import 'package:sky_engine/_http/http.dart';` as `import 'dart:io';` in some library.
 ///http请求
 class HttpManager {
   static const CONTENT_TYPE_JSON = "application/json";
@@ -18,12 +22,14 @@ class HttpManager {
   ///[ params] 请求参数
   ///[ header] 外加头
   ///[ option] 配置
-  static netFetch(url, params, Map<String, String> header, Options option, {isJson =false,noTip = false}) async {
+  static netFetch(url, params, Map<String, String> header, Options option, BuildContext context,{isJson =false,noTip = false}) async {
 
     //没有网络
     var connectivityResult = await (new Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
-      return new ResultData(Code.errorHandleFunction(Code.NETWORK_ERROR, "", noTip), false, Code.NETWORK_ERROR);
+      Toast.toast(context, "请连接网络！");
+//      return new ResultData(Code.errorHandleFunction(Code.NETWORK_ERROR, "", noTip), false, Code.NETWORK_ERROR);
+      return new ResultData("请连接网络~！", false, Code.NETWORK_ERROR);
     }
 
     Map<String, String> headers = new HashMap();

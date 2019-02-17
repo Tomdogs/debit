@@ -1,7 +1,9 @@
 import 'package:debit/common/dao/UserDao.dart';
 import 'package:debit/common/model/User.dart';
+import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/utils/AppStyle.dart';
+import 'package:debit/common/utils/CommonUtils.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/Toast.dart';
 import 'package:flutter/cupertino.dart';
@@ -35,10 +37,12 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
     key1: new TextEditingController(),
     key2: new TextEditingController(),
   };
-
   bool isCheck = true;
   ///表单
-  Widget formWidget(String title, String desc, String key) {
+  Widget formWidget(String title, String desc, String key,bool isEnable) {
+
+
+
     return new Container(
       margin: EdgeInsets.only(left: 5, top: 1, right: 5, bottom: 1),
       decoration: BoxDecoration(
@@ -62,14 +66,12 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
               child: new Padding(
                 padding: EdgeInsets.only(left: 5, right: 5),
                 child: new TextFormField(
-                  enabled: true,
-                  enableInteractiveSelection: true,
+                  enabled: isEnable == true ? true:false,//是否不可编辑
                   controller: textController[key],
                   decoration: new InputDecoration(
                     hintText: desc,
                   ),
                   validator: (String value) {
-//                    print("---validator---");
                     print("validator key为:$key , value 为：$value");
                     //删除首尾空格
                     if (value == null || value.isEmpty || value.trim().length == 0) {
@@ -83,6 +85,7 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
                     print("onSaved保存的key为:$key , value 为：$value");
                     _formData[key] = value;
                   },
+
                 ),
               ))
         ],
@@ -106,16 +109,18 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
 
       User user = store.state.userInfo;
       _formData[keyID] = user.userID;
-
-      UserDao.getUpdatePassword(_formData).then((res){
+      CommonUtils.showLoadingDialog(context,text:'正在上传...');
+      UserDao.getUpdatePassword(_formData,context).then((res){
         String msg= res.data;
         if(res.result){
-          Navigator.pop(context);
+          Toast.toast(context, "信息上传成功！");
           new Future.delayed(const Duration(seconds: 1), () {
+            Navigator.pop(context);
             Navigator.pushReplacementNamed(context, '/managerHome');
             return true;
           });
         }else{
+          Navigator.pop(context);
           Toast.toast(context,msg);
         }
       });
@@ -125,6 +130,28 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
     }
   }
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getUserInfo();
+
+  }
+
+  void _getUserInfo() async{
+
+    UserDao.getUserById(context).then((res){
+      if(res != null && res.result) {
+        Data data = res.data;
+        print("修改密码1：${data.userName}");
+        print("修改密码2：${data.userNetroomPhonenum}");
+
+//        textController[key0].text = data.userName;
+        textController[key0].text = data.userNetroomPhonenum;
+
+      }
+    });
+  }
 
 
   @override
@@ -148,10 +175,10 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
                       children: <Widget>[
                         new Padding(padding: EdgeInsets.only(top: 10)),
 
-                        formWidget('手机号码', '请输入手机号码', key0),
+                        formWidget('手机号码', '请输入手机号码', key0,false),
 //                    formWidget('图片验证码', '请输入图片验证码', key1),
-                        formWidget('短信验证', '请输入验证码', key1),
-                        formWidget('新密码', '请设置6-16位密码', key2),
+                        formWidget('网厅密码', '请输入网厅密码', key1,true),
+                        formWidget('新密码', '请设置6-16位密码', key2,true),
 
                         new Padding(padding: EdgeInsets.all(20.0)),
                         new Container(

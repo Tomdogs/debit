@@ -31,7 +31,7 @@ class PersonDebitState extends State<PersonDebit>{
 
   void _getTradingBorrowInfo() async{
 
-    UserDao.getTradingBorrowed().then((res){
+    UserDao.getTradingBorrowed(context).then((res){
       if(res.result){
         setState(() {
           listData= res.data;
@@ -43,8 +43,10 @@ class PersonDebitState extends State<PersonDebit>{
       }
     });
   }
+  bool havaData = true;
   showLoadingDialog() {
     if (listData == null || listData.length == 0) {
+      havaData = false;
       return true;
     }
     return false;
@@ -53,14 +55,17 @@ class PersonDebitState extends State<PersonDebit>{
 
   getBody() {
     if (showLoadingDialog()) {
+      if(!havaData){
+        return new Center(child:new Text("暂时还没有数据"));
+      }
       return getProgressDialog();
     } else {
       return getListView();
     }
   }
   getProgressDialog() {
-//    return new Center(child:new CircularProgressIndicator());
-    return new Center(child: new LinearProgressIndicator());
+    return new Center(child:new CircularProgressIndicator());
+//    return new Center(child: new LinearProgressIndicator());
   }
 
   ListView getListView() => new ListView.builder(

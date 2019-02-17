@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:debit/common/config/Config.dart';
 import 'package:debit/common/dao/DaoResult.dart';
 import 'package:debit/common/model/BorrowSetting.dart';
@@ -15,7 +14,7 @@ import 'package:dio/dio.dart';
 import 'package:redux/redux.dart';
 
 class UserDao {
-  static login(phoneNumber, userPassword, store) async {
+  static login(phoneNumber, userPassword, store,context) async {
     Map requestParams = {
       "user_netroom_phonenum": phoneNumber,
       "user_password": userPassword,
@@ -29,7 +28,7 @@ class UserDao {
     }
 //    var res = await HttpManager.netFetch(Address.getLogin(), requestParams, null, new Options(method: "post"));
     var res = await HttpManager.netFetch(
-        Address.getLogin(), requestParams, null, null);
+        Address.getLogin(), requestParams, null, null,context);
 
     if (res != null && res.result) {
       var jsonData = res.data;
@@ -51,14 +50,13 @@ class UserDao {
     return new DataResult(null, false);
   }
 
-  static register(phoneNumber, netRoomPassword, userPassword, store) async {
+  static register(phoneNumber, netRoomPassword, userPassword, store,context) async {
     Map requestParams = {
       "user_netroom_phonenum": phoneNumber,
       "user_netroom_password": netRoomPassword,
       "user_password": userPassword,
     };
-    var res = await HttpManager.netFetch(
-        Address.getRegister(), requestParams, null, null);
+    var res = await HttpManager.netFetch(Address.getRegister(), requestParams, null, null,context);
 //    var res = await HttpUtil.getInstance().post(Address.getRegister(), data: requestParams);
     if (res != null && res.result) {
       var jsonData = res.data;
@@ -67,7 +65,11 @@ class UserDao {
       var msg = map['msg'];
       String userId = map['userId'];
 
-      if (code == Code.STATUS_SUCCESS) {
+      if (code == Code.STATUS_SUCCESS && userId != null) {
+
+        print('注册成功后返回的是：$userId');
+
+
         await LocalStorage.save(Config.USER_PHONE_KEY, phoneNumber);
         await LocalStorage.save(Config.NET_ROOM_PW_KEY, netRoomPassword);
         await LocalStorage.save(Config.PW_KEY, userPassword);
@@ -83,7 +85,7 @@ class UserDao {
         return new DataResult(msg, false);
       }
     }
-    return new DataResult(null, res.result);
+    return new DataResult("网络出现问题", res.result);
   }
 
   ///初始化用户信息
@@ -122,9 +124,9 @@ class UserDao {
   }
 
   ///修改用户资料信息
-  static updateUserDataInfo(requestParams) async {
+  static updateUserDataInfo(requestParams,context) async {
     var res = await HttpManager.netFetch(Address.getUpdateUserReferenceInfo(),
-        requestParams, null, new Options(method: "post"),isJson: true);
+        requestParams, null, new Options(method: "post"),context,isJson: true);
     if (res != null && res.result) {
       print("上传/更新用户资料信息：${res.data.toString()}");
       var data = res.data.toString();
@@ -142,9 +144,9 @@ class UserDao {
   }
 
   ///查询用户资料信息
-  static getUserDataInfo() async {
+  static getUserDataInfo(context) async {
     var res = await HttpManager.netFetch(Address.getUserReferenceInfo(),
-        {'userId': await getUserID()}, null, new Options(method: "post"));
+        {'userId': await getUserID()}, null, new Options(method: "post"),context);
 
     if (res != null && res.result) {
       print("查询用户资料信息luo1：${res.data.toString()}");
@@ -168,9 +170,9 @@ class UserDao {
 
 
   ///提交身份信息
-  static getSubmitUserIdentity(formData) async {
+  static getSubmitUserIdentity(formData,context) async {
     var res = await HttpManager.netFetch(Address.getSubmitUserIdentity(),
-        formData, null, new Options(method: "post"),isJson: false);
+        formData, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("提交身份信息1：${res.data.toString()}");
@@ -190,9 +192,9 @@ class UserDao {
   }
 
   ///查询用户信息
-  static getUserById() async {
+  static getUserById(context) async {
     var res = await HttpManager.netFetch(Address.getUserById(),
-        {'id': await getUserID()}, null, new Options(method: "post"),isJson: false);
+        {'id': await getUserID()}, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("查询用户信息1：${res.data.toString()}");
@@ -216,9 +218,9 @@ class UserDao {
   }
 
   ///提交收款银行卡信息
-  static getUserBankCardInfo(formData) async {
+  static getUserBankCardInfo(formData,context) async {
     var res = await HttpManager.netFetch(Address.getUserBankCardInfo(),
-        formData, null, new Options(method: "post"),isJson: false);
+        formData, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("提交收款银行卡信息：${res.data.toString()}");
@@ -237,9 +239,9 @@ class UserDao {
   }
 
   ///查询收款银行卡信息
-  static getQueryBankCardInfo() async {
+  static getQueryBankCardInfo(context) async {
     var res = await HttpManager.netFetch(Address.getQueryBankCardInfo(),
-        {'userId': await getUserID()}, null, new Options(method: "post"),isJson: false);
+        {'userId': await getUserID()}, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("查询收款银行卡信息1：${res.data.toString()}");
@@ -260,9 +262,9 @@ class UserDao {
 
 
   ///手机号验证
-  static getUserPhoneNumberInfo(formData) async {
+  static getUserPhoneNumberInfo(formData,context) async {
     var res = await HttpManager.netFetch(Address.getUserPhoneNumberInfo(),
-        formData, null, new Options(method: "post"),isJson: false);
+        formData, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("手机号验证：${res.data.toString()}");
@@ -282,9 +284,9 @@ class UserDao {
 
 
   ///查询手机号信息（用于数据回显）
-  static getQueryPhoneNumberInfo() async {
+  static getQueryPhoneNumberInfo(context) async {
     var res = await HttpManager.netFetch(Address.getQueryPhoneNumberInfo(),
-        {'userId': await getUserID()}, null, new Options(method: "post"),isJson: false);
+        {'userId': await getUserID()}, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("查询手机号信息1：${res.data.toString()}");
@@ -304,9 +306,9 @@ class UserDao {
 
 
   ///我的借款
-  static getTradingBorrowed() async {
+  static getTradingBorrowed(context) async {
     var res = await HttpManager.netFetch(Address.getTradingBorrowed(),
-        {'userId': await getUserID()}, null, new Options(method: "post"),isJson: false);
+        {'userId': await getUserID()}, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("我的借款1：${res.data.toString()}");
@@ -326,9 +328,9 @@ class UserDao {
 
 
   ///我的还款
-  static getTradingReturn() async {
+  static getTradingReturn(context) async {
     var res = await HttpManager.netFetch(Address.getTradingReturn(),
-        {'userId': await getUserID()}, null, new Options(method: "post"),isJson: false);
+        {'userId': await getUserID()}, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("我的还款1：${res.data.toString()}");
@@ -347,9 +349,9 @@ class UserDao {
   }
 
   ///用户修改密码
-  static getUpdatePassword(formData) async {
+  static getUpdatePassword(formData,context) async {
     var res = await HttpManager.netFetch(Address.getUpdatePassword(),
-        formData, null, new Options(method: "post"),isJson: false);
+        formData, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("用户修改密码：${res.data.toString()}");
@@ -369,9 +371,9 @@ class UserDao {
 
 
   ///贷款设置加载
-  static getTradingBorrowingQueryBase() async {
+  static getTradingBorrowingQueryBase(context) async {
     var res = await HttpManager.netFetch(Address.getTradingBorrowingQueryBase(),
-        {'userId': await getUserID()}, null, new Options(method: "post"),isJson: false);
+        {'userId': await getUserID()}, null, new Options(method: "post"),context,isJson: false);
 
     if (res != null && res.result) {
       print("贷款设置加载1：${res.data.toString()}");
@@ -390,12 +392,57 @@ class UserDao {
   }
 
   ///用户借款
-  static getTradingBorrowingNow(formData) async {
+  static getTradingBorrowingNow(formData,context) async {
     var res = await HttpManager.netFetch(Address.getTradingBorrowingNow(),
-        formData, null, new Options(method: "post"),isJson: true);
+        formData, null, new Options(method: "post"),context,isJson: true);
 
     if (res != null && res.result) {
       print("用户借款：${res.data.toString()}");
+
+      Map infoMap = json.decode(res.data.toString());
+      String code = infoMap['code'];
+      var msg = infoMap['msg'];
+
+      if (code == Code.STATUS_SUCCESS) {
+        return new DataResult(msg, true);
+      } else {
+        return new DataResult(msg, false);
+      }
+    }
+
+  }
+
+  ///短信接口
+  static getSms(String phoneNum,context) async {
+    var res = await HttpManager.netFetch(Address.getSms(),
+        {'user_netroom_phonenum': phoneNum}, null, new Options(method: "post"),context,isJson: false);
+
+    if (res != null && res.result) {
+      print("短信接口：${res.data.toString()}");
+
+      Map infoMap = json.decode(res.data.toString());
+      String status = infoMap['code'];
+      int code = infoMap['messageCode'];
+      var msg = infoMap['msg'];
+
+      if (status == Code.STATUS_SUCCESS) {
+        return new DataResult(code, true);
+      } else {
+        print("短信接口2：${msg}");
+        return new DataResult(msg, false);
+      }
+    }
+
+  }
+
+  ///提交审核
+  static getUpdateUserExamineState(formData,context) async {
+    var res = await HttpManager.netFetch(Address.getUpdateUserExamineState(),
+        formData, null, new Options(method: "post"),context,isJson: true);
+
+    //0 待提交 1 审核中 2 审核不通过 3 审核成功
+    if (res != null && res.result) {
+      print("提交审核：${res.data.toString()}");
 
       Map infoMap = json.decode(res.data.toString());
       String code = infoMap['code'];

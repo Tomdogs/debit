@@ -24,7 +24,9 @@ class PersonCustomerService extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return new WebviewScaffold(
-      withJavascript: true,
+      withZoom: true,  // 允许网页缩放
+      withLocalStorage: true, // 允许LocalStorage
+      withJavascript: true, // 允许执行js代码
       url: url,
       scrollBar:true,
       withLocalUrl: true,

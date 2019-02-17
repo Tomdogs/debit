@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:debit/common/dao/UserDao.dart';
 import 'package:debit/common/model/UserBorrowRepay.dart';
 import 'package:debit/common/utils/AppStyle.dart';
 import 'package:debit/widgets/LoanRowLayoutWidget.dart';
 import 'package:debit/widgets/Toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 class PersonRepayment extends StatefulWidget{
   @override
@@ -24,12 +27,12 @@ class PersonRepaymentState extends State<PersonRepayment>{
     // TODO: implement initState
     super.initState();
     _getTradingBorrowInfo();
-
   }
 
+  bool havaData = true;
   void _getTradingBorrowInfo() async{
 
-    UserDao.getTradingReturn().then((res){
+    UserDao.getTradingReturn(context).then((res){
       if(res.result){
         setState(() {
           listData= res.data;
@@ -37,13 +40,14 @@ class PersonRepaymentState extends State<PersonRepayment>{
         });
 
       }else{
-        Toast.toast(context,"有误");
+        Toast.toast(context,"网络有误");
       }
     });
   }
 
   showLoadingDialog() {
     if (listData == null || listData.length == 0) {
+      havaData = false;
       return true;
     }
     return false;
@@ -52,14 +56,18 @@ class PersonRepaymentState extends State<PersonRepayment>{
 
   getBody() {
     if (showLoadingDialog()) {
+      if(!havaData){
+        return new Center(child:new Text("暂时还没有数据"));
+      }
       return getProgressDialog();
     } else {
       return getListView();
     }
   }
+
   getProgressDialog() {
-//    return new Center(child:new CircularProgressIndicator());
-    return new Center(child: new LinearProgressIndicator());
+
+    return new Center(child:new CircularProgressIndicator());
   }
   ListView getListView() => new ListView.builder(
     itemCount: dataLength,
@@ -77,6 +85,11 @@ class PersonRepaymentState extends State<PersonRepayment>{
       );
     },
   );
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     // TODO: implement build

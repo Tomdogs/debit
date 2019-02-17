@@ -15,8 +15,9 @@ class InputWidget extends StatefulWidget {
   final TextEditingController controller;
 
   final bool visible;
+  final TextInputType keyboardType;
 
-  InputWidget({Key key, this.hintText, this.iconData, this.onChanged, this.textStyle, this.controller, this.obscureText = false,this.visible = false}) : super(key: key);
+  InputWidget({Key key, this.hintText, this.iconData, this.onChanged, this.textStyle, this.controller, this.obscureText = false,this.visible = false,this.keyboardType = TextInputType.text}) : super(key: key);
 
   @override
   _InputWidgetState createState() => new _InputWidgetState();
@@ -31,6 +32,7 @@ class _InputWidgetState extends State<InputWidget> {
   Widget build(BuildContext context) {
     return new Offstage(
       child: new TextField(
+        keyboardType: widget.keyboardType == TextInputType.number?TextInputType.number:TextInputType.text,
         controller: widget.controller,
         onChanged: widget.onChanged,
         obscureText: widget.obscureText,

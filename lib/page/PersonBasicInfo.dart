@@ -7,6 +7,7 @@ import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/AppStyle.dart';
+import 'package:debit/common/utils/CommonUtils.dart';
 import 'package:debit/net/Address.dart';
 import 'package:debit/net/HttpUtil.dart';
 import 'package:debit/widgets/FlexButton.dart';
@@ -17,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class PersonBasicInfo extends StatefulWidget{
   @override
@@ -47,7 +49,6 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
   static final String key4 = 'idCardTakeImg';
   static final String keyFile = 'files';
 
-  static final String netUrl = 'https://raw.githubusercontent.com/CarGuo/GSYGithubAppFlutter/master/static/images/logo.png';
   static String cardFrontImgURL;
   static String cardBackImgURL;
   static String cardTackImgURL;
@@ -154,27 +155,35 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
     print("路径为：${appDocPath}");
 
 
-    UserDao.getUserById().then((res){
+    UserDao.getUserById(context).then((res){
       if(res != null && res.result) {
         Data data = res.data;
+
         print("用户名1：${data.userName}");
         print("用户名2：${data.userIdcardNumber}");
         print("用户名3：${data.userIdCardFrontImg}");
         print("用户名4：${data.userIdCardBackImg}");
         print("用户名5：${data.idCardTakeImg}");
-
+        print("用户名5：${data.userName == ''}");
 
         textController[key0].text = data.userName;
         textController[key1].text = data.userIdcardNumber;
-        cardFrontImgURL = Address.host+data.userIdCardFrontImg;
-        cardBackImgURL = Address.host+data.userIdCardBackImg;
-        cardTackImgURL = Address.host+data.idCardTakeImg;
 
-//        HttpUtil.getInstance().download('url', appDocPath);
-        /*setState(() {
-          textController[key0].text = data.userName;
-          textController[key1].text = data.userIdcardNumber;
-        });*/
+        userName = data.userName;
+        userIdcardNumber = data.userIdcardNumber;
+
+        if(data.userIdCardFrontImg != '' && data.userIdCardBackImg != '' && data.idCardTakeImg!=''){
+          setState(() {
+            isFirst1 = true;
+            isFirst2 = true;
+            isFirst3 = true;
+
+            cardFrontImgURL = Address.host+data.userIdCardFrontImg;
+            cardBackImgURL = Address.host+data.userIdCardBackImg;
+            cardTackImgURL = Address.host+data.idCardTakeImg;
+          });
+        }
+
       }
     });
   }
@@ -187,7 +196,11 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
 
     if(url != null && isFirst){
       isFirst1 = false;
-      return new Image.network(url);
+//      return new Image.network(url);
+      return new CachedNetworkImage(
+        placeholder: new CircularProgressIndicator(),
+        imageUrl:url,
+      );
     }else{
       if(file == null){
         return new Image(image: new AssetImage(idCardOpposite));
@@ -201,7 +214,11 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
 
     if(url != null && isFirst){
       isFirst2 = false;
-      return new Image.network(url);
+//      return new Image.network(url);
+      return new CachedNetworkImage(
+        placeholder: new CircularProgressIndicator(),
+        imageUrl:url,
+      );
     }else{
       if(file == null){
         return new Image(image: new AssetImage(idCardPositive));
@@ -214,10 +231,15 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
 
   Widget getNetWorkImage3(String url,File file,bool isFirst){
 
-    print("getNetWorkImage1: $isFirst");
+    print("getNetWorkImage1-: $isFirst");
+    print("getNetWorkImage1-URL: $url");
     if(url != null && isFirst){
       isFirst3 = false;
-      return new Image.network(url);
+//      return new Image.network(url);
+      return new CachedNetworkImage(
+          placeholder: new CircularProgressIndicator(),
+          imageUrl:url,
+      );
 
     }else{
       if(file == null){
@@ -418,6 +440,10 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
                     text: "提交",
                     onPress: () {
 
+                      if(userName ==null || userIdcardNumber == null){
+                        Toast.toast(context, "请将信息填写完整！");
+                        return;
+                      }
                       if(image_1_flag && image_2_flag && image_3_flag){
 
                         User user = store.state.userInfo;
@@ -437,12 +463,14 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
                         print("personBasicInfor 中user image2 ：${_image2}");
                         print("personBasicInfor 中user image3 ：${_image3}");
 
-                        UserDao.getSubmitUserIdentity(formData).then((res){
+                        CommonUtils.showLoadingDialog(context,text:'正在上传...');
+                        UserDao.getSubmitUserIdentity(formData,context).then((res){
                           if(res != null && res.result){
                             Toast.toast(context, "信息上传成功！");
-                            Navigator.pop(context);
+
                             new Future.delayed(const Duration(seconds: 1), () {
-                              Navigator.pushReplacementNamed(context, '/managerHome');
+                              Navigator.pop(context);
+                              Navigator.pushReplacementNamed(context, '/personInfo');
                               return true;
                             });
                             User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,
@@ -450,6 +478,7 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
                             store.dispatch(new UpdateUserAction(newUser));
 
                           }else{
+                            Navigator.pop(context);
                             Toast.toast(context, "信息上传失败！");
                           }
                         });

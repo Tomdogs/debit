@@ -113,6 +113,7 @@ class _TabBarState extends State<TabBarWidget>
             print("onPageChanged当前为$index");
             _onPageChange(index);
           },
+          physics: new NeverScrollableScrollPhysics(),//禁止滑动
         ),
 
         ///系统，底部导航栏，也就是tab栏

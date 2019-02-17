@@ -30,11 +30,12 @@ class HomePage extends StatefulWidget {
 
 class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin {
 
+  var rateArray =[];
   @override
   void initState() {
     super.initState();
 
-    UserDao.getTradingBorrowingQueryBase().then((res){
+    UserDao.getTradingBorrowingQueryBase(context).then((res){
       DataLoadSet dataLoadSet = res.data;
 
       print("贷款设置加载 ${dataLoadSet.loadMin}");
@@ -42,6 +43,23 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
       print("贷款设置加载 ${dataLoadSet.loadSelectDays}");
       print("贷款设置加载 ${dataLoadSet.loadServicesExpenses}");
       print("贷款设置加载 ${dataLoadSet.status}");
+
+      var expenses = dataLoadSet.loadServicesExpenses;
+      if(expenses.length>6){
+
+        rateArray = dataLoadSet.loadServicesExpenses.split(',');
+        if(rateArray[0] != null){
+          rate = double.parse(rateArray[0])*0.01;
+          print("默认利率的是${rateArray[0]}");
+        }
+
+        print("当前利率长度:${rateArray.length}");
+        print("当前利率长度:${rateArray.toString()}");
+        /*rateArray.forEach((item){
+          print('${rateArray.indexOf(item)}:$item');
+          print('---------------------');
+        });*/
+      }
 
       setState(() {
         loadMin = double.parse(dataLoadSet.loadMin);
@@ -58,12 +76,12 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
   double money = 10000;
   int _radioValue = 0;
   double days = 3;
-  double rate = 0.07;
+  double rate = 0.0007;
   double interest = 0;
   double countMoney = 0;
   static Color redColor = Colors.red;
   double loadMin = 10000.0;
-  double loadMax = 150000.0;
+  double loadMax = 200000.0;
 
 
   Map<int,Color> _color ={
@@ -86,49 +104,68 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
           _color[0] = redColor;
           _color[1]=_color[2]=_color[3]=_color[4]=_color[5]= null;
           days = 3;
+          print("0利率的是${rateArray[0]}");
+          if(rateArray[0] != null){
+            rate = double.parse(rateArray[0])*0.01;
+            print("0利率的是${rateArray[0]}");
+          }
           interest = money*rate*days*30;
           countMoney = money+interest;
-          print("选择的是$_radioValue");
           break;
         case 1:
           _color[1] = redColor;
           _color[0]=_color[2]=_color[3]=_color[4]=_color[5]= null;
           days = 6;
+          if(rateArray[1] != null){
+            rate = double.parse(rateArray[1])*0.01;
+            print("1利率的是${rateArray[0]}");
+          }
           interest = money*rate*days*30;
           countMoney = money+interest;
-          print("选择的是$_radioValue");
           break;
         case 2:
           _color[2] = redColor;
           _color[1]=_color[0]=_color[3]=_color[4]=_color[5]= null;
           days = 9;
+          if(rateArray[2] != null){
+            rate = double.parse(rateArray[2])*0.01;
+            print("2利率的是${rateArray[2]}");
+          }
           interest = money*rate*days*30;
           countMoney = money+interest;
-          print("选择的是$_radioValue");
           break;
         case 3:
           _color[3] = redColor;
           _color[1]=_color[2]=_color[0]=_color[4]=_color[5]= null;
           days = 12;
+          if(rateArray[3] != null){
+            rate = double.parse(rateArray[3])*0.01;
+            print("3利率的是${rateArray[3]}");
+          }
           interest = money*rate*days*30;
           countMoney = money+interest;
-          print("选择的是$_radioValue");
           break;
         case 4:
           _color[4] = redColor;
           _color[1]=_color[2]=_color[3]=_color[0]=_color[5]= null;
           days = 24;
+          if(rateArray[4] != null){
+            rate = double.parse(rateArray[4])*0.01;
+            print("4利率的是${rateArray[4]}");
+          }
           interest = money*rate*days*30;
           countMoney = money+interest;
-          print("选择的是$_radioValue");
           break;
         case 5:
           _color[5] = redColor;
           _color[1]=_color[2]=_color[3]=_color[4]=_color[0]= null;
           days = 36;
+          if(rateArray[5] != null){
+            rate = double.parse(rateArray[5])*0.01;
+            print("5利率的是${rateArray[5]}");
+          }
           interest = money*rate*days*30;
           countMoney = money+interest;
-          print("选择的是$_radioValue");
           break;
 
       }
@@ -149,11 +186,10 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
     );
   }
 
-//  FormData formData = new FormData.from({});
   Map<String,dynamic> _formData;
 
   verificationInfo(user) async{
-    await UserDao.getUserById().then((res){
+    await UserDao.getUserById(context).then((res){
       if(res != null && res.result){
         Data data = res.data;
         if(data.flagOne == 1 && data.flagTwo == 1 && data.flagThree == 1 && data.flagFour == 1){
@@ -178,24 +214,20 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
     });
   }
   borrowNow(formData)async{
-    await UserDao.getTradingBorrowingNow(formData).then((res){
+    await UserDao.getTradingBorrowingNow(formData,context).then((res){
       if(res != null && res.result){
 
-        Toast.toast(context, "借款成功!");
-
-        Navigator.pop(context);
+        Toast.toast(context, res.data);
         new Future.delayed(const Duration(seconds: 1), () {
-          Navigator.pushReplacementNamed(context, '/managerHome');
-//          return true;
+          Navigator.pushNamed(context, '/personDebit');
         });
-        return true;
       }else{
         Toast.toast(context, res.data);
-        return false;
       }
 
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -246,16 +278,16 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                               backgroundColor: Colors.grey,
                               progressColor: Colors.red,
                               progresseight: 20,
-                              value: 10000, //默认进度值
+                              value: 1000, //默认进度值
 
                               indicatorRadius: 15, //中间指示器圆圈的半径,初始位置有点奇怪
                               indicatorColor: Colors.orange, //中间指示器圆圈的颜色
 
-                              sectionCount: 14, //进度条分为几段
+                              sectionCount: 190, //进度条分为几段
 
                               hideBubble: false,
                               bubbleRadius: 14,
-                              bubbleColor: Colors.purple,
+                              bubbleColor: Colors.orange,
                               bubbleTextColor: Colors.white,
                               bubbleTextSize: 14,
                               bubbleMargin: 4,
@@ -340,8 +372,8 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                     new Expanded(
                                         flex:2,
                                         child:  new Container(
-//                                            alignment: Alignment.centerRight,
-                                            child: new Text('(含日利率$rate% ￥${interest.floor()}元)',style: new TextStyle(fontSize: 10),)
+//                                            alignment: Alignment.centerRight,//保留几位小数
+                                            child: new Text('(含日利率${(rate*100).toStringAsFixed(2)}% ￥${interest.floor()}元)',style: new TextStyle(fontSize: 10),)
                                         )
                                     ),
                                   ],
@@ -397,46 +429,21 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                       children: <Widget>[new Text('立即借款', style: new TextStyle(fontSize: 20), maxLines: 1, overflow:TextOverflow.ellipsis)],
                                     ),
                                     onPressed: () {
+                                      if(!isCheck){
+                                        Toast.toast(context, "请勾选同意协议！");
+                                        return;
+                                      }
+
                                       User user = store.state.userInfo;
                                       if(user.phoneNumber == null && user.userPassword == null){
                                         Navigator.pushNamed(context, '/loginAndRegister');
                                       }else{
 
-
-
-                                       /* new Future(() => verificationInfo(user))
-                                            .then((m) {
-                                              print("m的值为：$m");
-                                              borrowNow(_formData);
-                                            });*/
-
-                                       /* new Future(() => null)
-                                            .then((n) {
-                                              verificationInfo(user);
-                                            })
-                                            .then((m){
-                                              print("m的值为：$m");
-                                              borrowNow(_formData);
-                                            });*/
-
-                                        /*verificationInfo(user).then((res2){
-                                          print("多线程问题：$res2");
-                                          if(res2.result){
-                                            borrowNow(_formData);
-                                            print("多线程问题2：$res2");
-                                          }
-                                        });*/
-                                        /*Future f1 = new Future(() => null);
-                                        Future f2 = new Future(() => null);
-                                        f1.then((_)=>verificationInfo(user));
-                                        f2.then((_)=>borrowNow(_formData));*/
-
-
-
-                                        UserDao.getUserById().then((res){
+                                        UserDao.getUserById(context).then((res){
                                           if(res != null && res.result){
                                             Data data = res.data;
-                                            User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,flagOne: data.flagOne,flagTwo: data.flagTwo,flagThree: data.flagThree,flagFour: data.flagFour);
+                                            User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,
+                                                flagOne: data.flagOne,flagTwo: data.flagTwo,flagThree: data.flagThree,flagFour: data.flagFour);
                                             store.dispatch(new UpdateUserAction(newUser));
                                             if(data.flagOne == 1 && data.flagTwo == 1 && data.flagThree == 1 && data.flagFour == 1){
 
@@ -467,7 +474,7 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                 decoration:new BoxDecoration(
                                   color: AppColors.backgroundColor ,
                                 ),
-                                child: FlutterMarquee(
+                                /*child: FlutterMarquee(
                                     texts: ["2019-01-19:185****2365 成功借款 50000元！",
                                     "2019-01-19:185****7060 成功借款 10000元！",
                                     "2019-01-19:185****5968 成功借款 30000元！",
@@ -476,7 +483,7 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                       print(i);
                                     },
                                     duration: 4
-                                ),
+                                ),*/
                               )
                           ),
                         ],

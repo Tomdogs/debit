@@ -4,6 +4,7 @@ import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/AppStyle.dart';
+import 'package:debit/common/utils/CommonUtils.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/Toast.dart';
 import 'package:flutter/cupertino.dart';
@@ -93,6 +94,11 @@ class PersonPhoneNumberState extends State<PersonPhoneNumber> {
     var _form = _formKey.currentState;
     print("form状态：${_form.validate()}");
 
+    if(!isCheck){
+      Toast.toast(context, "请勾选同意协议！");
+      return;
+    }
+
     if (_form.validate()) {
       _form.save();
 
@@ -106,12 +112,14 @@ class PersonPhoneNumberState extends State<PersonPhoneNumber> {
       User user = store.state.userInfo;
       _formData[keyID] = user.userID;
 
-      UserDao.getUserPhoneNumberInfo(_formData).then((res){
+      CommonUtils.showLoadingDialog(context,text:'正在上传...');
+      UserDao.getUserPhoneNumberInfo(_formData,context).then((res){
         String msg= res.data;
         if(res.result){
-          Navigator.pop(context);
+          Toast.toast(context, "信息上传成功！");
           new Future.delayed(const Duration(seconds: 1), () {
-            Navigator.pushReplacementNamed(context, '/managerHome');
+            Navigator.pop(context);
+            Navigator.pushReplacementNamed(context, '/personInfo');
             return true;
           });
 
@@ -119,6 +127,7 @@ class PersonPhoneNumberState extends State<PersonPhoneNumber> {
               flagOne: user.flagOne,flagTwo: user.flagTwo,flagThree: user.flagThree,flagFour: 1);
           store.dispatch(new UpdateUserAction(newUser));
         }else{
+          Navigator.pop(context);
           Toast.toast(context,msg);
         }
       });
@@ -132,7 +141,7 @@ class PersonPhoneNumberState extends State<PersonPhoneNumber> {
 
 
   void _getPhoneNumber()async{
-    UserDao. getQueryPhoneNumberInfo().then((res) {
+    UserDao. getQueryPhoneNumberInfo(context).then((res) {
       if (res.result) {
         Data data = res.data;
         textController[key0].text = data.userNetroomPhonenum;

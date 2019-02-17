@@ -1,7 +1,11 @@
+import 'package:debit/common/dao/UserDao.dart';
+import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/utils/AppStyle.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/RowLayoutWidget.dart';
+import 'package:debit/widgets/Toast.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
@@ -15,6 +19,43 @@ class PersonInfoState extends State<PersonInfo> {
   final String personInfo = "assets/images/my_personInfo.png";
   final String bankCard = "assets/images/my_bankCark.png";
   final String phone = "assets/images/my_phone.png";
+
+  String message = '提交审核';
+  int userExamineStatus;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getUserInfo();
+  }
+  void _getUserInfo()async{
+    UserDao.getUserById(context).then((res){
+      if(res != null && res.result) {
+        Data data = res.data;
+        print("提交审核的状态：${data.userExamineStatus}");
+        setState(() {
+          userExamineStatus = data.userExamineStatus;
+          switch(userExamineStatus){
+          /// 0 待提交 1 审核中 2 审核不通过 3  审核成功
+            case 0:
+              message = '提交审核';
+              break;
+            case 1:
+              message = '审核中';
+              break;
+            case 2:
+              message = '审核不通过';
+              break;
+            case 3:
+              message = '审核成功';
+              break;
+          }
+        });
+
+      }
+    });
+  }
 
   /**
    * new StoreBuilder<ReduxState>(
@@ -95,9 +136,24 @@ class PersonInfoState extends State<PersonInfo> {
                     margin: EdgeInsets.all(10),
                     child: new FlexButton(
                       textColor: Colors.white,
-                      color: Theme.of(context).primaryColor,
-                      text: "提交审核",
-                      onPress: () {},
+                      color: userExamineStatus == 0 ?Theme.of(context).primaryColor:Colors.grey,
+                      text: message,
+                      onPress: () {
+                        if(userExamineStatus == 0){
+                          FormData formData = new FormData();
+                          formData.add('id', store.state.userInfo.userID);
+                          formData.add('state', 1);
+                          UserDao.getUpdateUserExamineState(formData,context).then((res){
+                            if(res.data != null && res.result){
+                              print("点击了提交审核按钮");
+                              Toast.toast(context, res.data);
+                            }else if(!res.result){
+                              Toast.toast(context, res.data.toString());
+                            }
+                          });
+                        }
+
+                      },
                     ),
                   ),
                 ],

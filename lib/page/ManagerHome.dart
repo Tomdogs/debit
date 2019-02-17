@@ -11,13 +11,22 @@ class ManagerHome extends StatefulWidget {
   _ManagerHomeState createState() => _ManagerHomeState();
 }
 
+/**
+ *  - assets/images/ic_nav_my_normal.png
+    - assets/images/ic_nav_my_pressed.png
+    - assets/images/ic_nav_tweet_actived.png
+    - assets/images/ic_nav_tweet_normal.png
+ */
 class _ManagerHomeState extends State<ManagerHome> {
 
   final PageController topPageControl = new PageController();
   final List<String> tab = ['首页', '我的'];
   final List<IconData> listIcon = [Icons.home, Icons.person];
-  final List<String> homeIcon = ['assets/images/hearts.png','assets/images/heart.png'];
-  final List<String> mineIcon = ['assets/images/googleg_standard.png','assets/images/googleg_disabled.png'];
+//  final List<String> homeIcon = ['assets/images/hearts.png','assets/images/heart.png'];
+//  final List<String> mineIcon = ['assets/images/googleg_standard.png','assets/images/googleg_disabled.png'];
+
+  final List<String> homeIcon = ['assets/images/ic_nav_tweet_normal.png','assets/images/ic_nav_tweet_actived.png'];
+  final List<String> mineIcon = ['assets/images/ic_nav_my_normal.png','assets/images/ic_nav_my_pressed.png'];
 
 
   Image _getAssetIcon(String path) {
@@ -26,10 +35,10 @@ class _ManagerHomeState extends State<ManagerHome> {
   Image _getBarIcon(int index, bool isActive) {
     if (index == 0) {
       return _getAssetIcon(
-          isActive ? homeIcon[0] : homeIcon[1]);
+          isActive ? homeIcon[1] : homeIcon[0]);
     } else if (index == 1) {
       return _getAssetIcon(
-          isActive ?  mineIcon[0]: mineIcon[1]);
+          isActive ?  mineIcon[1]: mineIcon[0]);
     }
   }
 

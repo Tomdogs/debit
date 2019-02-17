@@ -99,8 +99,8 @@ class _MinePageStateless extends State<MinePage> {
                                   margin: EdgeInsets.only(top: 10.0),
                                   child: new RichText(
                                       text: new TextSpan(
-                                          text: '${user?.phoneNumber},${user?.userPassword}',
-                                          recognizer: _recognizer(false),
+                                          text: '${user?.phoneNumber}',//,${user?.userPassword}
+//                                          recognizer: _recognizer(false),
                                           style: new TextStyle(
                                               fontSize: 18,
                                               color: Colors.white)

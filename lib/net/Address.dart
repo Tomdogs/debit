@@ -4,10 +4,12 @@ import 'package:debit/common/config/Config.dart';
 ///地址数据
 class Address {
   static const String host = "http://47.112.6.233:8080/AnPing";
+//  static const String host = "http://www.anpingjiebei.com/AnPing";
   static const String hostWeb = "https://github.com/";
   static const String downloadUrl = 'https://www.pgyer.com/GSYGithubApp';
   static const String graphicHost = 'https://ghchart.rshah.org/';
   static const String updateUrl = 'https://www.pgyer.com/vj2B';
+  static const String web_url = 'http://c105.pop800.com/web800/c.do?n=428632&type=1&url=http%3A%2F%2Ft5k7m4x2.gotoip3.com%2Findex.php%3Fm%3DHelp%26a%3Dindex&l=cn&at=0';
 
   ///登录
   static getLogin(){
@@ -91,4 +93,13 @@ class Address {
     return "${host}/server/tradingCenter/tradingBorrowingNow";
   }
 
+  ///短信接口
+  static getSms(){
+    return "${host}/server/userManage/getSms";
+  }
+
+  ///提交审核
+  static getUpdateUserExamineState(){
+    return "${host}/server/userManage/updateUserExamineState";
+  }
 }

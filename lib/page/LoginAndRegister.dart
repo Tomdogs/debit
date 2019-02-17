@@ -1,15 +1,16 @@
+import 'dart:async';
+
 import 'package:debit/common/config/Config.dart';
 import 'package:debit/common/dao/UserDao.dart';
-import 'package:debit/common/model/User.dart';
 import 'package:debit/common/redux/ReduxState.dart';
-import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/AppStyle.dart';
+import 'package:debit/common/utils/CommonUtils.dart';
 import 'package:debit/common/utils/LocalStorage.dart';
-import 'package:debit/common/utils/SnackBar.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/InputWidget.dart';
 import 'package:debit/widgets/Toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
 ///登录和注册页面
@@ -32,6 +33,24 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
   final TextEditingController pwController = new TextEditingController();
   final TextEditingController netPwController = new TextEditingController();
 
+  String _time = "发送验证码";
+  Ticker _ticker;
+  int smsCode;
+
+
+  _LoginAndRegisterState(){
+
+    _ticker = new Ticker((Duration duration){
+      setState(() {
+        _time = (60-duration.inSeconds).toString();
+        _time = '重新发送${_time}s';
+        if(60-duration.inSeconds<=0){
+          _ticker.stop(canceled: true);
+          _time = '重新发送';
+        }
+      });
+    });
+  }
   @override
   void initState() {
     // TODO: implement initState
@@ -39,9 +58,16 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
     initParams();
   }
 
+  ///整个页面dispose时，记得把控制器也dispose掉，释放内存
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
   initParams() async {
-    _phoneNumber = await LocalStorage.get(Config.USER_PHONE_KEY);
-    _user_password = await LocalStorage.get(Config.PW_KEY);
+//    _phoneNumber = await LocalStorage.get(Config.USER_PHONE_KEY);
+//    _user_password = await LocalStorage.get(Config.PW_KEY);
 
     print("存储的用户名：${_phoneNumber},密码为${_user_password}");
 
@@ -52,6 +78,7 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
+
     return new StoreBuilder<ReduxState>(
       builder: (context, store) {
         return new GestureDetector(
@@ -88,18 +115,70 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
                               print("onChanged 姓名---------------：$_phoneNumber");
                             },
                             controller: userController,
+                            keyboardType: TextInputType.number,
                           ),
                           new Padding(padding: new EdgeInsets.all(10.0)),
-                          new InputWidget(
-                            hintText: "请输入网厅密码",
-                            iconData: Icons.lock,
-                            obscureText: true,
-                            onChanged: (String value) {
-                              _netRoom_password = value;
-                            },
-                            controller: netPwController,
-                            visible: widget.isLogin,
+                          new Offstage(
+                            offstage: widget.isLogin, //这里控制
+                            child: new Row(
+                              children: <Widget>[
+                                new Expanded(
+                                  flex: 3,
+                                  child:  new InputWidget(
+                                    hintText: "请输入验证码",
+                                    iconData: Icons.verified_user,
+                                    onChanged: (String value) {
+                                      _netRoom_password = value;
+                                    },
+                                    controller: netPwController,
+//                                    visible: widget.isLogin,
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
+                                new Expanded(
+                                  flex: 2,
+                                  child: new FlatButton(
+                                    textColor: Theme.of(context).primaryColor,
+                                    child: new Text('$_time'),
+                                    onPressed: (){
+                                      if(_ticker.isTicking){
+                                        /*_ticker.stop(canceled: true);
+                                        setState(() {
+                                          _time = "开始";
+                                        });*/
+                                        print("验证码 正在运行");
+                                      }else{
+
+                                        if (_phoneNumber == null ||
+                                            _phoneNumber.length == 0) {
+                                          Toast.toast(context, "请正确填写手机号");
+                                          return;
+                                        }
+
+                                        UserDao.getSms(_phoneNumber.trim(),context).then((res){
+                                          if(res.data != null && res.result){
+                                            _ticker.start();//开始计时
+                                            print("点击了获取验证码按钮");
+
+                                            print("验证码:${res.data}");
+                                            smsCode = res.data;
+                                            Toast.toast(context, "验证码发送成功");
+                                          }else if(!res.result){
+                                            Toast.toast(context, res.data.toString());
+                                          }
+
+                                        });
+                                      }
+
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+
+
+
                           new Padding(padding: new EdgeInsets.all(10.0)),
                           new InputWidget(
                             hintText: "请输入用户密码",
@@ -110,6 +189,7 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
                             },
                             controller: pwController,
                           ),
+                          
                           new Padding(padding: new EdgeInsets.all(30.0)),
                           new FlexButton(
                             text: widget.isLogin ? "登录" : "注册",
@@ -126,21 +206,21 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
                                     _user_password.length == 0) {
                                   return;
                                 }
-
-                                ///  dao 存入
-                                UserDao.login(_phoneNumber.trim(), _user_password.trim(), store).then((res){
+                                CommonUtils.showLoadingDialog(context);
+                                UserDao.login(_phoneNumber.trim(), _user_password.trim(), store,context).then((res){
                                   print("login " + res.toString());
-                                  Navigator.pop(context);
-
+                                  Toast.toast(context, "登录成功！");
                                   if(res.data != null && res.result){
                                     new Future.delayed(const Duration(seconds: 1), () {
-                                      Navigator.pushReplacementNamed(
-                                          context, '/managerHome');
+                                      Navigator.pop(context);
+                                      Navigator.pushReplacementNamed(context, '/managerHome');
                                     });
 
                                   }else if(res.data != null){
+                                    Navigator.pop(context);
                                     Toast.toast(context, res.data.toString());
                                   }else{
+                                    Navigator.pop(context);
                                     Toast.toast(context, '网络错误！');
                                   }
                                 });
@@ -157,25 +237,30 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
                                   return;
                                 }
                                 if (_netRoom_password == null ||
-                                    _netRoom_password.length == 0) {
+                                    _netRoom_password.length == 0 || smsCode.toString() != _netRoom_password.trim()) {
+                                  Toast.toast(context, '验证码错误!');
                                   return;
                                 }
-                                UserDao.register(_phoneNumber.trim(), _netRoom_password.trim(), _user_password.trim(), store).then((res){
 
+                                CommonUtils.showLoadingDialog(context);
+                                UserDao.register(_phoneNumber.trim(), _netRoom_password.trim(), _user_password.trim(), store,context).then((res){
                                   print("register " + res.toString());
-                                  Navigator.pop(context);
+
                                   if(res.data != null && res.result){
+                                    Toast.toast(context, "注册成功！");
                                     new Future.delayed(const Duration(seconds: 1), () {
+                                      Navigator.pop(context);
                                       Navigator.pushReplacementNamed(context, '/managerHome');
                                       return true;
                                     });
 
                                   }else if(res.data != null){
+                                    Navigator.pop(context);
                                     Toast.toast(context, res.data.toString());
                                   }else{
+                                    Navigator.pop(context);
                                     Toast.toast(context, '网络错误！');
                                   }
-                                  print("注册时：执行了2");
                                 });
                               }
                             },

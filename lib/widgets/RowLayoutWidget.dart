@@ -150,11 +150,12 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
             });
           },
           onTap: () {
+
+
+
             if(widget.routeName != null){
-
               User user = store.state.userInfo;
-
-              UserDao.getUserById().then((res){
+              UserDao.getUserById(context).then((res){
                 if(res != null && res.result) {
                   Data data = res.data;
                   User newUser = new User(userID: user.userID,
@@ -177,6 +178,11 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
               }
 
             }else{
+              User user = store.state.userInfo;
+              if(user.phoneNumber == null && user.userPassword == null){
+                Navigator.pushNamed(context, '/loginAndRegister');
+                return;
+              }
               _dialogSingOut(context,store);
             }
           },

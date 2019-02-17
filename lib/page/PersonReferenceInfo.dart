@@ -7,6 +7,7 @@ import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/AppStyle.dart';
+import 'package:debit/common/utils/CommonUtils.dart';
 import 'package:debit/widgets/FlexButton.dart';
 import 'package:debit/widgets/Toast.dart';
 import 'package:debit/widgets/city_picker.dart';
@@ -116,8 +117,7 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
                     hintText: desc,
                   ),
                   validator: (String value) {
-//                    print("---validator---");
-//                    print("validator key为:$key , value 为：$value");
+
                     //删除首尾空格
                     if (value == null || value.isEmpty || value.trim().length == 0) {
                       print('$title 验证不能通过：$value');
@@ -125,8 +125,6 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
                     }
                   },
                   onSaved: (String value){///当调用FormState.save方法的时候调用
-//                    print("---onSaved---");
-//                    print("onSaved保存的key为:$key , value 为：$value");
                     _formData[key] = value;
                   },
                 ),
@@ -320,13 +318,16 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
       });
       User user = store.state.userInfo;
       _formData[keyID] = user.userID;
+
+      CommonUtils.showLoadingDialog(context,text:'正在上传...');
       ///更新用户资料信息
-      UserDao.updateUserDataInfo(_formData).then((res){
+      UserDao.updateUserDataInfo(_formData,context).then((res){
         String msg= res.data;
         if(res.result){
-          Navigator.pop(context);
+          Toast.toast(context, "信息上传成功！");
           new Future.delayed(const Duration(seconds: 1), () {
-            Navigator.pushReplacementNamed(context, '/managerHome');
+            Navigator.pop(context);
+            Navigator.pushReplacementNamed(context, '/personInfo');
             return true;
           });
 
@@ -336,6 +337,7 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
           store.dispatch(new UpdateUserAction(newUser));
 
         }else{
+          Navigator.pop(context);
           Toast.toast(context,msg);
         }
       });
@@ -347,8 +349,8 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
 
 
   ///查询用户信息,如果以前有信息就按以前的填写
-  void _getUserInfo(){
-    UserDao. getUserDataInfo().then((res) {
+  void _getUserInfo(context){
+    UserDao. getUserDataInfo(context).then((res) {
       if (res.result) {
         Data data = res.data;
 ///_formData[key4] == null || _formData[key7] == null || _formData[key11] == null || _formData[key14] == null
@@ -385,7 +387,7 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
   @override
   Widget build(BuildContext context) {
     if(!isFirst){
-      _getUserInfo();
+      _getUserInfo(context);
       isFirst = true;
     }
     _formData[key4] =  textController[key4].text;
