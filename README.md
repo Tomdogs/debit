@@ -8,6 +8,7 @@
 - 图片的选择和相机的使用
 - 省份选择器
 - 状态管理 Flutter_redux 的使用
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20190404195826688.gif)
 
 
