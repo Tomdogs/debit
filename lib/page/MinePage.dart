@@ -1,8 +1,9 @@
 import 'package:debit/common/model/User.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/utils/AppStyle.dart';
-import 'package:debit/page/LoginAndRegister.dart';
+import 'package:debit/page/Login.dart';
 import 'package:debit/page/PersonInfo.dart';
+import 'package:debit/page/Register.dart';
 import 'package:debit/widgets/RowLayoutWidget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +30,16 @@ class _MinePageStateless extends State<MinePage> {
     TapGestureRecognizer _recognizer(bool isLogin) {
       final TapGestureRecognizer recognizer = new TapGestureRecognizer();
       recognizer.onTap = () {
-        Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
-          return new LoginAndRegister(isLogin);
-        }));
+        if(isLogin){
+          Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
+            return new Login();
+          }));
+        }else{
+          Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
+            return new Register();
+          }));
+        }
+
       };
       return recognizer;
     }
@@ -120,7 +128,6 @@ class _MinePageStateless extends State<MinePage> {
                             new Container(
                               decoration:
                                   new BoxDecoration(color: Colors.white),
-                              margin: EdgeInsets.only(top: 10.0),
                               child: new Column(
                                 children: <Widget>[
                                   new RowLayoutWidget(
@@ -139,13 +146,25 @@ class _MinePageStateless extends State<MinePage> {
                                       AppImage.getAssetIconFrom(userRepay),
                                       "我的还款",
                                       Icons.chevron_right,
-                                      routeName:'/personRepayment'),
+                                      routeName:'/personRepayment',
+                                      ),
+                                  AppDivider.thinDivider(),
+                                  new RowLayoutWidget(
+                                    AppImage.getAssetIconFrom(userExit),
+                                    "立即还款",
+                                    Icons.chevron_right,
+                                    isImmediateRepayment:true
+                                  ),
                                   AppDivider.thinDivider(),
                                   new RowLayoutWidget(
                                       AppImage.getAssetIconFrom(userInfo),
                                       "客服",
                                       Icons.chevron_right,
-                                      routeName:'/personCustomerService'),
+                                      routeName:'/personCustomerService',
+                                      color: Colors.red,
+                                      fontSize: 18,
+                                  ),
+
                                   AppDivider.thinDivider(),
                                   new RowLayoutWidget(
                                       AppImage.getAssetIconFrom(userPassword),
@@ -168,12 +187,22 @@ class _MinePageStateless extends State<MinePage> {
                                     "退出登录",
                                     Icons.chevron_right,
                                   ),
-
+                                  new Container(
+                                    decoration:
+                                    new BoxDecoration(color: AppColors.backgroundColor),
+                                    child: new Center(
+                                      child: new Padding(
+                                          padding: EdgeInsets.only(top: 10,bottom: 10),
+                                          child: new Text('如有任何问题请及时与客服联系',style: new TextStyle(color: Colors.black45),),
+                                      )
+                                    ),
+                                  )
                                 ],
                               ),
                             ),
                           ],
-                        )),
+                        )
+                    ),
                   ],
                 )));
       },

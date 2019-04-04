@@ -69,8 +69,9 @@ class HttpManager {
         print('请求异常: ' + e.toString());
         print('请求异常url: ' + url);
       }
-
-      return new ResultData(Code.errorHandleFunction(errorResponse.statusCode, e.message, noTip), false, errorResponse.statusCode);
+      Toast.toast(context, "请求异常,请稍后再试！");
+//      return new ResultData(Code.errorHandleFunction(errorResponse.statusCode, e.message, noTip), false, errorResponse.statusCode);
+      return new ResultData('请求异常', false, errorResponse.statusCode);
     }
 
     if (Config.DEBUG) {

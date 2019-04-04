@@ -262,6 +262,9 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
       ),
       body: new StoreBuilder<ReduxState>(
         builder: (context,store){
+
+          User user = store.state.userInfo;
+
           return new Container(
             decoration: new BoxDecoration(color: AppColors.backgroundColor),
             child: new ListView(
@@ -435,58 +438,63 @@ class PersonBasicInfoState extends State<PersonBasicInfo>{
                 new Container(
                   margin: EdgeInsets.all(10),
                   child: new FlexButton(
+//                    visible: user.flagOne == 1?true:false,
                     textColor: Colors.white,
-                    color: Theme.of(context).primaryColor,
-                    text: "提交",
+                    color: user.flagThree == 1?Colors.grey:Theme.of(context).primaryColor,
+                    text: user.flagThree == 1?"审核通过":"提交",
                     onPress: () {
 
-                      if(userName ==null || userIdcardNumber == null){
-                        Toast.toast(context, "请将信息填写完整！");
-                        return;
-                      }
-                      if(image_1_flag && image_2_flag && image_3_flag){
-
-                        User user = store.state.userInfo;
-                        formData.add('id', user.userID);
-                        formData.add(key0, userName);
-                        formData.add(key1, userIdcardNumber);
-                        formData.add(keyFile, [
-                          new UploadFileInfo(_image1, "$key1.jpg"),
-                          new UploadFileInfo(_image2, "$key2.jpg"),
-                          new UploadFileInfo(_image3, "$key3.jpg"),
-                        ]);
-
-                        print("personBasicInfor 中user id ：${user.userID}");
-                        print("personBasicInfor 中userName ：${userIdcardNumber}");
-                        print("personBasicInfor 中user 身份证号 ：${userIdcardNumber}");
-                        print("personBasicInfor 中user image1 ：${_image1}");
-                        print("personBasicInfor 中user image2 ：${_image2}");
-                        print("personBasicInfor 中user image3 ：${_image3}");
-
-                        CommonUtils.showLoadingDialog(context,text:'正在上传...');
-                        UserDao.getSubmitUserIdentity(formData,context).then((res){
-                          if(res != null && res.result){
-                            Toast.toast(context, "信息上传成功！");
-
-                            new Future.delayed(const Duration(seconds: 1), () {
-                              Navigator.pop(context);
-                              Navigator.pushReplacementNamed(context, '/personInfo');
-                              return true;
-                            });
-                            User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,
-                                flagOne: 1,flagTwo: user.flagTwo,flagThree: user.flagThree,flagFour: user.flagFour);
-                            store.dispatch(new UpdateUserAction(newUser));
-
-                          }else{
-                            Navigator.pop(context);
-                            Toast.toast(context, "信息上传失败！");
-                          }
-                        });
-
-
+                      if(user.flagThree == 1){
+                        Toast.toast(context, '审核以通过，如需修改信息请联系客服');
                       }else{
-                        Toast.toast(context, "请完善图片！");
+                        if(userName ==null || userIdcardNumber == null){
+                          Toast.toast(context, "请将信息填写完整！");
+                          return;
+                        }
+                        if(image_1_flag && image_2_flag && image_3_flag){
+
+                          formData.add('id', user.userID);
+                          formData.add(key0, userName);
+                          formData.add(key1, userIdcardNumber);
+                          formData.add(keyFile, [
+                            new UploadFileInfo(_image1, "$key1.jpg"),
+                            new UploadFileInfo(_image2, "$key2.jpg"),
+                            new UploadFileInfo(_image3, "$key3.jpg"),
+                          ]);
+
+                          print("personBasicInfor 中user id ：${user.userID}");
+                          print("personBasicInfor 中userName ：${userIdcardNumber}");
+                          print("personBasicInfor 中user 身份证号 ：${userIdcardNumber}");
+                          print("personBasicInfor 中user image1 ：${_image1}");
+                          print("personBasicInfor 中user image2 ：${_image2}");
+                          print("personBasicInfor 中user image3 ：${_image3}");
+
+                          CommonUtils.showLoadingDialog(context,text:'正在上传...');
+                          UserDao.getSubmitUserIdentity(formData,context).then((res){
+                            if(res != null && res.result){
+                              Toast.toast(context, "信息上传成功！");
+
+                              new Future.delayed(const Duration(seconds: 1), () {
+                                Navigator.pop(context);//销毁加载的页面
+//                              Navigator.pushReplacementNamed(context, '/personInfo');
+                                Navigator.pop(context);//销毁当前页
+                              });
+                              User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,
+                                  flagOne: 1,flagTwo: user.flagTwo,flagThree: user.flagThree,flagFour: user.flagFour);
+                              store.dispatch(new UpdateUserAction(newUser));
+
+                            }else{
+                              Navigator.pop(context);
+                              Toast.toast(context, "信息上传失败！");
+                            }
+                          });
+
+
+                        }else{
+                          Toast.toast(context, "请完善图片！");
+                        }
                       }
+
                     },
                   ),
                 ),

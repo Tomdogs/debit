@@ -56,7 +56,7 @@ class PersonDebitState extends State<PersonDebit>{
   getBody() {
     if (showLoadingDialog()) {
       if(!havaData){
-        return new Center(child:new Text("暂时还没有数据"));
+        return new Center(child:new Text("暂无借款数据"));
       }
       return getProgressDialog();
     } else {

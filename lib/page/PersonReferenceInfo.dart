@@ -136,12 +136,65 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
 
   }
 
+  ///电话表单
+  Widget formWidgetForPhoneNumber(String title,String desc,String key){
+    return new Container(
+      margin: EdgeInsets.only(left: 5,top: 1,right: 5,bottom: 1),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: new BorderRadius.all(new Radius.circular(6.0))
+      ),
+      child: new Row(
+
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new Expanded(
+            flex: 3,
+            child: new Padding(
+              padding: EdgeInsets.all(5),
+              child: new Text(title,style: TextStyle(fontSize: 16,color: Colors.blue),),
+            ),
+          ),
+          new Expanded(
+              flex: 7,
+              child: new Padding(
+                padding: EdgeInsets.only(left: 5,right: 5),
+                child: new TextFormField(
+//                  textAlign: TextAlign.end,
+//                  initialValue: "",
+                  enabled: true,
+                  enableInteractiveSelection: true,
+                  controller: textController[key],
+//                  initialValue: _formData[key],
+                  decoration: new InputDecoration(
+                    hintText: desc,
+                  ),
+                  validator: (String value) {
+
+                    //删除首尾空格
+                    if (value == null || value.isEmpty || value.trim().length == 0 || !CommonUtils.isChinaPhoneLegal(value)) {
+                      print('$title 手机号验证不能通过：$value');
+                      return '请填写正确的手机号!';
+                    }
+                  },
+                  onSaved: (String value){///当调用FormState.save方法的时候调用
+                    _formData[key] = value;
+                  },
+                ),
+              )
+          )
+        ],
+      ),
+    );
+
+  }
+
   String province;
   String city;
   String area;
   FocusNode _focusNode = new FocusNode();
   ///带城市选择功能的表单
-  Widget formWidget2(String title,String desc,String key){
+  Widget formWidgetForCitySelect(String title,String desc,String key){
 
     return new Container(
       margin: EdgeInsets.only(left: 5,top: 1,right: 5,bottom: 1),
@@ -220,7 +273,7 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
   }
 
   ///带底部弹出选择框功能的表单
-  Widget formWidget3(String title,String desc,String key){
+  Widget formWidgetForRelation(String title,String desc,String key){
 
     return new Container(
       margin: EdgeInsets.only(left: 5,top: 1,right: 5,bottom: 1),
@@ -327,11 +380,12 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
           Toast.toast(context, "信息上传成功！");
           new Future.delayed(const Duration(seconds: 1), () {
             Navigator.pop(context);
-            Navigator.pushReplacementNamed(context, '/personInfo');
+//            Navigator.pushReplacementNamed(context, '/personInfo');
+            Navigator.pop(context);//销毁当前页
             return true;
           });
 
-          User user = store.state.userInfo;
+//          User user = store.state.userInfo;
           User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,
               flagOne: user.flagOne,flagTwo: 1,flagThree: user.flagThree,flagFour: user.flagFour);
           store.dispatch(new UpdateUserAction(newUser));
@@ -402,6 +456,9 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
         ),
         body: new StoreBuilder<ReduxState>(
           builder: (context,store){
+
+            User user = store.state.userInfo;
+
             return new ListView(
               children: <Widget>[
                 new Container(
@@ -426,10 +483,10 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
                           formWidget('公司职位','请输入公司职位',key1),
                           formWidget('单位电话','号码加区号',key2),
                           formWidget('工作年龄(年)','请输入工作年龄',key3),
-                          formWidget2('单位地址','请选择省市区',key4),
+                          formWidgetForCitySelect('单位地址','请选择省市区',key4),
                           formWidget('详细地址','例：东北大学东三寝室楼6A888',key5),
                           formWidget('月收入(元)','请输入现在工作月收入',key6),
-                          formWidget2('现居住地址','请选择省市区',key7),
+                          formWidgetForCitySelect('现居住地址','请选择省市区',key7),
                           formWidget('详细地址','例：东北大学东三寝室楼6A888',key8),
                           new Container(
                             padding: new EdgeInsets.all(10.0),
@@ -441,8 +498,8 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
                             ),
                           ),
                           formWidget('姓名','请输入联系人姓名',key9),
-                          formWidget('手机号','请输入手机号',key10),
-                          formWidget3('关系','请选择关系',key11),
+                          formWidgetForPhoneNumber('手机号','请输入手机号',key10),
+                          formWidgetForRelation('关系','请选择关系',key11),
                           new Container(
                             padding: new EdgeInsets.all(10.0),
                             alignment: Alignment.center,
@@ -454,17 +511,23 @@ class PersonReferenceInfoState extends State<PersonReferenceInfo> {
                             ),
                           ),
                           formWidget('姓名','请输入联系人姓名',key12),
-                          formWidget('手机号','请输入手机号',key13),
-                          formWidget3('关系','请选择关系',key14),
+                          formWidgetForPhoneNumber('手机号','请输入手机号',key13),
+                          formWidgetForRelation('关系','请选择关系',key14),
                           new Padding(padding: EdgeInsets.all(20.0)),
                           new Container(
                             margin: EdgeInsets.all(10),
                             child: new FlexButton(
+//                              visible: user.flagTwo == 1?true:false,
                               textColor: Colors.white,
-                              color: Theme.of(context).primaryColor,
-                              text: "提交",
+                              color: user.flagThree == 1?Colors.grey:Theme.of(context).primaryColor,
+                              text: user.flagThree == 1?"审核通过":"提交",
                               onPress: () {
-                                _formSubmitted(store);
+
+                                if(user.flagThree == 1){
+                                  Toast.toast(context, '审核以通过，如需修改信息请联系客服');
+                                }else{
+                                  _formSubmitted(store);
+                                }
                               },
                             ),
                           ),

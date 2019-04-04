@@ -20,4 +20,10 @@ class Config {
   static const LOCALE = "locale";
 
   static const ISLOGIN = 'false';
+
+  static const PLATFORM_AGREEMENT = '''哈哈哈哈哈
+              ''';
+
+  static const ENTRUST_AGREEMENT =''' 呵呵呵呵呵
+  ''';
 }

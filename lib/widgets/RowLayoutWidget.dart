@@ -16,8 +16,11 @@ class RowLayoutWidget extends StatefulWidget {
   final IconData rightIcon;
   final String routeName;
   final int code;
+  final Color color;
+  final bool isImmediateRepayment;
+  final double fontSize;
 
-  RowLayoutWidget(this.leftIcon, this.topString,this.rightIcon, {this.routeName,this.bottomString, this.isShowRightString = true,this.code = 0});
+  RowLayoutWidget(this.leftIcon, this.topString,this.rightIcon, {this.routeName,this.bottomString, this.isShowRightString = true,this.code = 0,this.color = Colors.black,this.isImmediateRepayment = false,this.fontSize = 16});
 
   @override
   RowLayoutWidgetState createState() => new RowLayoutWidgetState();
@@ -43,6 +46,22 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
           ],
         ));
   }
+  Future<bool> _dialogImmediateRepayment(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (context) => new AlertDialog(
+//          title: new Text('退出登录'),
+          content: new Text('你的审核未通过，请及时与客服联系！'),
+          actions: <Widget>[
+            new FlatButton(onPressed: () => Navigator.of(context).pop(false), child: new Text('取消')),
+            new FlatButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/personCustomerService');
+                },
+                child: new Text('确定'))
+          ],
+        ));
+  }
   ///删除用户信息，退出登录
   removeUserData(store) async{
     await LocalStorage.remove(Config.USER_INFO);
@@ -52,7 +71,6 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
     await LocalStorage.remove(Config.USER_ID_KEY);
 
     store.dispatch(new UpdateUserAction(new User(phoneNumber:null,userPassword:null,netRoomPassword:null,userID: null,flagOne: 0,flagTwo: 0,flagThree: 0,flagFour: 0)));
-
 
   }
 
@@ -86,7 +104,8 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
                         new Text(
                           widget.topString,
                           style: new TextStyle(
-                            fontSize: 16.0,
+                            fontSize: widget.fontSize,
+                            color: widget.color
                           ),
                         ),
                         new Offstage(
@@ -151,8 +170,6 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
           },
           onTap: () {
 
-
-
             if(widget.routeName != null){
               User user = store.state.userInfo;
               UserDao.getUserById(context).then((res){
@@ -172,18 +189,24 @@ class RowLayoutWidgetState extends State<RowLayoutWidget> {
 
               print("store 中存储的：${user.phoneNumber}");
               if(user.phoneNumber == null && user.userPassword == null){
-                Navigator.pushNamed(context, '/loginAndRegister');
+                Navigator.pushNamed(context, '/login');
               }else{
                 Navigator.pushNamed(context, widget.routeName);
               }
 
             }else{
-              User user = store.state.userInfo;
-              if(user.phoneNumber == null && user.userPassword == null){
-                Navigator.pushNamed(context, '/loginAndRegister');
-                return;
+
+
+              if(widget.isImmediateRepayment){
+                _dialogImmediateRepayment(context);
+              }else{
+                User user = store.state.userInfo;
+                if(user.phoneNumber == null && user.userPassword == null){
+                  Navigator.pushNamed(context, '/login');
+                  return;
+                }
+                _dialogSingOut(context,store);
               }
-              _dialogSingOut(context,store);
             }
           },
 

@@ -116,6 +116,7 @@ class PersonCustomerServiceState extends State<PersonCustomerService2>{
           mainAxisAlignment: MainAxisAlignment.center,
           children: titleContent,
         ),
+        centerTitle: true,
         iconTheme: new IconThemeData(color: Colors.white),
       ),
       withZoom: true,  // 允许网页缩放

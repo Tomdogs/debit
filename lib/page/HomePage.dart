@@ -1,3 +1,6 @@
+import 'package:debit/widgets/MyMarquee.dart';
+import 'package:flutter/material.dart';
+import 'package:debit/common/config/Config.dart';
 import 'package:debit/common/dao/DaoResult.dart';
 import 'package:debit/common/dao/UserDao.dart';
 import 'package:debit/common/model/BorrowSetting.dart';
@@ -6,19 +9,10 @@ import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/redux/UserReducer.dart';
 import 'package:debit/common/utils/AppStyle.dart';
-import 'package:debit/common/utils/CommonUtils.dart';
-import 'package:debit/widgets/FlexButton.dart';
-import 'package:debit/widgets/ImagePickerWidget.dart';
 import 'package:debit/widgets/Toast.dart';
-import 'package:debit/widgets/city_picker.dart';
-import 'package:debit/widgets/marquee/index.dart';
-import 'package:debit/widgets/seekbar/progress_value.dart';
-import 'package:debit/widgets/seekbar/section_text_model.dart';
 import 'package:debit/widgets/seekbar/seekbar.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
 ///主页面
@@ -30,7 +24,11 @@ class HomePage extends StatefulWidget {
 
 class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin {
 
-  var rateArray =[];
+  final GlobalKey<_MainHomePage> _globalkey = new GlobalKey<_MainHomePage>();
+
+  var rateArray = [];
+  var daysArray = [];
+  var colorArray = [redColor];
   @override
   void initState() {
     super.initState();
@@ -38,44 +36,37 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
     UserDao.getTradingBorrowingQueryBase(context).then((res){
       DataLoadSet dataLoadSet = res.data;
 
-      print("贷款设置加载 ${dataLoadSet.loadMin}");
-      print("贷款设置加载 ${dataLoadSet.loadMax}");
-      print("贷款设置加载 ${dataLoadSet.loadSelectDays}");
-      print("贷款设置加载 ${dataLoadSet.loadServicesExpenses}");
-      print("贷款设置加载 ${dataLoadSet.status}");
+      rateArray = dataLoadSet.loadServicesExpenses.split(',');
+      daysArray = dataLoadSet.loadSelectDays.split(',');
 
-      var expenses = dataLoadSet.loadServicesExpenses;
-      if(expenses.length>6){
+      colorArray.length = daysArray.length;
 
-        rateArray = dataLoadSet.loadServicesExpenses.split(',');
-        if(rateArray[0] != null){
-          rate = double.parse(rateArray[0])*0.01;
-          print("默认利率的是${rateArray[0]}");
-        }
-
-        print("当前利率长度:${rateArray.length}");
-        print("当前利率长度:${rateArray.toString()}");
-        /*rateArray.forEach((item){
-          print('${rateArray.indexOf(item)}:$item');
-          print('---------------------');
-        });*/
-      }
+      print("当前利率长度:${rateArray.length}");
+      print("当前利率:${rateArray.toString()}");
+      print("当前天数长度:${daysArray.length}");
+      print("当前天数:${daysArray.toString()}");
 
       setState(() {
         loadMin = double.parse(dataLoadSet.loadMin);
         loadMax = double.parse(dataLoadSet.loadMax);
+        rate = double.parse(rateArray[0])*0.01;
+        days = double.parse(daysArray[0])*30;
 
-        print("贷款设置加载1 ${loadMin}");
-        print("贷款设置加载2 ${loadMax}");
+        print("贷款设置加载最小金额： ${loadMin}");
+        print("贷款设置加载最大金额： ${loadMax}");
+
       });
     });
+
+    interest = money*rate*days;
+    countMoney = money + interest;
 
 
   }
 
-  double money = 10000;
+  double money = 10000.0;
   int _radioValue = 0;
-  double days = 3;
+  double days = 90;
   double rate = 0.0007;
   double interest = 0;
   double countMoney = 0;
@@ -83,91 +74,26 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
   double loadMin = 10000.0;
   double loadMax = 200000.0;
 
+  List<String> listMsg;
 
-  Map<int,Color> _color ={
-    0:redColor,
-    1:null,
-    2:null,
-    3:null,
-    4:null,
-    5:null,
-  };
-  final TapGestureRecognizer recognizer = new TapGestureRecognizer();
+  final TapGestureRecognizer platform_recognizer = new TapGestureRecognizer();
+  final TapGestureRecognizer entrust_recognizer = new TapGestureRecognizer();
   bool isCheck = true;
 
   void _handlerRadioValueChange(int value) {
-
     setState(() {
       _radioValue = value;
-      switch (_radioValue) {
-        case 0:
-          _color[0] = redColor;
-          _color[1]=_color[2]=_color[3]=_color[4]=_color[5]= null;
-          days = 3;
-          print("0利率的是${rateArray[0]}");
-          if(rateArray[0] != null){
-            rate = double.parse(rateArray[0])*0.01;
-            print("0利率的是${rateArray[0]}");
-          }
-          interest = money*rate*days*30;
-          countMoney = money+interest;
-          break;
-        case 1:
-          _color[1] = redColor;
-          _color[0]=_color[2]=_color[3]=_color[4]=_color[5]= null;
-          days = 6;
-          if(rateArray[1] != null){
-            rate = double.parse(rateArray[1])*0.01;
-            print("1利率的是${rateArray[0]}");
-          }
-          interest = money*rate*days*30;
-          countMoney = money+interest;
-          break;
-        case 2:
-          _color[2] = redColor;
-          _color[1]=_color[0]=_color[3]=_color[4]=_color[5]= null;
-          days = 9;
-          if(rateArray[2] != null){
-            rate = double.parse(rateArray[2])*0.01;
-            print("2利率的是${rateArray[2]}");
-          }
-          interest = money*rate*days*30;
-          countMoney = money+interest;
-          break;
-        case 3:
-          _color[3] = redColor;
-          _color[1]=_color[2]=_color[0]=_color[4]=_color[5]= null;
-          days = 12;
-          if(rateArray[3] != null){
-            rate = double.parse(rateArray[3])*0.01;
-            print("3利率的是${rateArray[3]}");
-          }
-          interest = money*rate*days*30;
-          countMoney = money+interest;
-          break;
-        case 4:
-          _color[4] = redColor;
-          _color[1]=_color[2]=_color[3]=_color[0]=_color[5]= null;
-          days = 24;
-          if(rateArray[4] != null){
-            rate = double.parse(rateArray[4])*0.01;
-            print("4利率的是${rateArray[4]}");
-          }
-          interest = money*rate*days*30;
-          countMoney = money+interest;
-          break;
-        case 5:
-          _color[5] = redColor;
-          _color[1]=_color[2]=_color[3]=_color[4]=_color[0]= null;
-          days = 36;
-          if(rateArray[5] != null){
-            rate = double.parse(rateArray[5])*0.01;
-            print("5利率的是${rateArray[5]}");
-          }
-          interest = money*rate*days*30;
-          countMoney = money+interest;
-          break;
 
+      for(int i=0;i<daysArray.length;i++){
+        if(i == value && rateArray[i] != null){
+          rate = double.parse(rateArray[i])*0.01;
+          colorArray[i] = redColor;
+          days = double.parse(daysArray[i])*30;
+          interest = money*rate*days;
+          countMoney = money+interest;
+        }else{
+          colorArray[i] = null;
+        }
       }
     });
   }
@@ -178,13 +104,14 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
         new Radio(
             value: i,
             groupValue: _radioValue,
-            onChanged: _handlerRadioValueChange
+            onChanged: _handlerRadioValueChange,
         ),
-        new Text(month,style: new TextStyle(color: _color[i]),)
-
+        new Text(month,style: new TextStyle(color: colorArray[i]),)
       ],
     );
+
   }
+
 
   Map<String,dynamic> _formData;
 
@@ -228,23 +155,60 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
     });
   }
 
+  /*getMarqueeDatas(store)async{
+    UserDao.getSevenDaysDatas(context).then((res){
+      var msg;
+      if( res != null && res.result){
+        msg = res.data;
+
+        listMsg = msg;
+        print("跑马灯的数据：$listMsg");
+        List<MarqueeMsg> list = new List();
+        for(int i=0;i<listMsg.length;i++){
+          list.add(new MarqueeMsg(listMsg[i]));
+        }
+        store.dispatch(new RefreshMarqueeAction(list));
+        print("跑马灯的数据：更新了數據");
+      }else{
+        var msg = res.data;
+        Toast.toast(context, msg);
+      }
+
+    });
+  }*/
 
   @override
   Widget build(BuildContext context) {
 
-    recognizer.onTap = (){
-      print("点击了用户协议书");
+    platform_recognizer.onTap = (){
+      showDialog(
+          context: context,
+        builder: (context) => new AlertDialog(
+          content: new  ListView(
+            children: <Widget>[
+              new Text(Config.PLATFORM_AGREEMENT),
+            ],
+          )
+        )
+      );
     };
-    interest = money*rate*days*30;
-    countMoney = money + interest;
 
-    /**
-     * return new StoreConnector<ReduxState,User>(
-        converter: (store) => store.state.userInfo,
-        builder: (context,user){
-     */
+    entrust_recognizer.onTap = (){
+      showDialog(
+          context: context,
+          builder: (context) => new AlertDialog(
+              content: new  ListView(
+                children: <Widget>[
+                  new Text(Config.ENTRUST_AGREEMENT),
+                ],
+              )
+          )
+      );
+    };
+
     return new StoreBuilder<ReduxState>(
       builder: (context,store){
+
         return new Scaffold(
           body: new Container(
               decoration: new BoxDecoration(color: AppColors.backgroundColor),
@@ -256,54 +220,57 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                       decoration: new BoxDecoration(
                         color: Theme.of(context).primaryColor,
                       ),
-//                  height: 200.0,
-                      padding: EdgeInsets.only(top: CommonUtils.sStaticBarHeight),
-                      child: new Center(
-                        child: new Column(
-                          ///上方和下方均匀分配空闲的垂直空间
+//                      padding: EdgeInsets.only(top: CommonUtils.sStaticBarHeight),
+                      child: new Column(
+                        ///上方和下方均匀分配空闲的垂直空间
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            new Text(
+//                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          new Padding(
+                              padding: EdgeInsets.only(top: 10),
+                            child: new Text(
                               "申请金额(元)",
                               style:
                               new TextStyle(color: Colors.white, fontSize: 20),
                             ),
-                            new Text('${money ?? 10000}',
-                                style: new TextStyle(
-                                    color: Colors.white, fontSize: 40)),
-                            new Padding(padding: EdgeInsets.only(top: 10)),
-                            new SeekBar(
-                              min: loadMin,
-                              max: loadMax,
-                              backgroundColor: Colors.grey,
-                              progressColor: Colors.red,
-                              progresseight: 20,
-                              value: 1000, //默认进度值
+                          ),
 
-                              indicatorRadius: 15, //中间指示器圆圈的半径,初始位置有点奇怪
-                              indicatorColor: Colors.orange, //中间指示器圆圈的颜色
+                          new Text('${money ?? 10000}',
+                              style: new TextStyle(
+                                  color: Colors.white, fontSize: 40)),
+//                            new Padding(padding: EdgeInsets.only(top: 10)),
+                          new SeekBar(
+                            min: loadMin,
+                            max: loadMax,
+                            backgroundColor: Colors.grey,
+                            progressColor: Colors.red,
+                            progresseight: 20,
+                            value: 1000, //默认进度值
 
-                              sectionCount: 190, //进度条分为几段
+                            indicatorRadius: 15, //中间指示器圆圈的半径,初始位置有点奇怪
+                            indicatorColor: Colors.orange, //中间指示器圆圈的颜色
 
-                              hideBubble: false,
-                              bubbleRadius: 14,
-                              bubbleColor: Colors.orange,
-                              bubbleTextColor: Colors.white,
-                              bubbleTextSize: 14,
-                              bubbleMargin: 4,
-                              afterDragShowSectionText: true,
+                            sectionCount: 190, //进度条分为几段
 
-                              onValueChanged: (v) {
-                                setState(() {
-                                  money = v.value;
-                                  interest = money*rate*days*30;
-                                  countMoney = money+interest;
-                                  print('当前的真实值：${v.value}');
-                                });
-                              },
-                            ),
-                          ],
-                        ),
+                            hideBubble: false,
+                            bubbleRadius: 14,
+                            bubbleColor: Colors.orange,
+                            bubbleTextColor: Colors.white,
+                            bubbleTextSize: 14,
+                            bubbleMargin: 4,
+                            afterDragShowSectionText: true,
+
+                            onValueChanged: (v) {
+                              setState(() {
+                                money = v.value;
+                                interest = money*rate*days;
+                                countMoney = money+interest;
+                                print('当前的真实值：${v.value}');
+                              });
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -328,20 +295,15 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                               ),
                             ),
                           ),
-
                           new Expanded(
                             flex: 2,
-                            child: new ListView(
+                            child: new ListView.builder(
+                              itemCount: daysArray.length,
                               scrollDirection: Axis.horizontal,
-                              children: <Widget>[
-                                _getListHorizontalRadio(0,"3个月"),
-                                _getListHorizontalRadio(1,"6个月"),
-                                _getListHorizontalRadio(2,"9个月"),
-                                _getListHorizontalRadio(3,"12个月"),
-                                _getListHorizontalRadio(4,"24个月"),
-                                _getListHorizontalRadio(5,"36个月"),
-                              ],
-                            ),
+                              itemBuilder: (context,index){
+                                return _getListHorizontalRadio(index,"${daysArray[index]}个月");
+                              },
+                            )
                           ),
 
                           new Expanded(
@@ -402,12 +364,12 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                           new TextSpan(
                                             text: '《平台服务协议》',
                                             style: new TextStyle(color: Colors.red),
-                                            recognizer:recognizer,
+                                            recognizer:platform_recognizer,
                                           ),
                                           new TextSpan(
                                             text: '《委托授权协议》',
                                             style: new TextStyle(color: Colors.red),
-                                            recognizer:recognizer,
+                                            recognizer:entrust_recognizer,
                                           )
                                         ]
                                     )
@@ -436,7 +398,7 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
 
                                       User user = store.state.userInfo;
                                       if(user.phoneNumber == null && user.userPassword == null){
-                                        Navigator.pushNamed(context, '/loginAndRegister');
+                                        Navigator.pushNamed(context, '/login');
                                       }else{
 
                                         UserDao.getUserById(context).then((res){
@@ -468,22 +430,35 @@ class _MainHomePage extends State<HomePage> with SingleTickerProviderStateMixin 
                                 ),
                               )
                           ),
+                          /*new Expanded(
+                              flex: 2,
+                              child: new Container(
+                                decoration:new BoxDecoration(
+                                  color: AppColors.backgroundColor ,
+                                ),
+                                child: FlutterMarquee(
+                                    texts: ["暂无数据！","暂无数据！2",].toList(),
+                                    textColor: Colors.blue,
+                                    onChange: (i) {
+                                      print("$i");
+                                    },
+                                    duration: 4,
+                                    autoStart: true,
+                                ),
+                              )
+                          ),*/
                           new Expanded(
                               flex: 2,
                               child: new Container(
                                 decoration:new BoxDecoration(
                                   color: AppColors.backgroundColor ,
                                 ),
-                                /*child: FlutterMarquee(
-                                    texts: ["2019-01-19:185****2365 成功借款 50000元！",
-                                    "2019-01-19:185****7060 成功借款 10000元！",
-                                    "2019-01-19:185****5968 成功借款 30000元！",
-                                    "2019-01-19:185****2547 成功借款 150000元！"].toList(),
-                                    onChange: (i) {
-                                      print(i);
-                                    },
-                                    duration: 4
-                                ),*/
+                                child: new MyMarquee(
+//                                    child:new Text("2019-02-23:185****4444 成功借款35000元"),
+//                                    paddingLeft:200.0,
+                                    duration:new Duration(seconds: 3),
+                                    stepOffset:100.0
+                                )
                               )
                           ),
                         ],

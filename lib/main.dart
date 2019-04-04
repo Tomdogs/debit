@@ -1,11 +1,10 @@
 import 'package:debit/common/model/User.dart';
 import 'package:debit/common/redux/ReduxState.dart';
 import 'package:debit/common/utils/AppStyle.dart';
-import 'package:debit/page/LoginAndRegister.dart';
+import 'package:debit/page/Login.dart';
 import 'package:debit/page/ManagerHome.dart';
 import 'package:debit/page/PersonBankCardInfo.dart';
 import 'package:debit/page/PersonBasicInfo.dart';
-import 'package:debit/page/PersonCustomerService.dart';
 import 'package:debit/page/PersonCustomerService2.dart';
 import 'package:debit/page/PersonDebit.dart';
 import 'package:debit/page/PersonInfo.dart';
@@ -13,6 +12,7 @@ import 'package:debit/page/PersonModifyPassword.dart';
 import 'package:debit/page/PersonPhoneNumber.dart';
 import 'package:debit/page/PersonReferenceInfo.dart';
 import 'package:debit/page/PersonRepayment.dart';
+import 'package:debit/page/Register.dart';
 import 'package:debit/page/WelcomePage.dart';
 import 'package:debit/widgets/ImagePickerWidget.dart';
 import 'package:flutter/material.dart';
@@ -27,10 +27,8 @@ class MyApp extends StatelessWidget {
 
   final store = new Store<ReduxState>(
     appReducer,
-    initialState: new ReduxState(userInfo: User.empty(),)
+    initialState: new ReduxState(userInfo: User.empty())
   );
-
-
 
 
   @override
@@ -55,12 +53,12 @@ class MyApp extends StatelessWidget {
             '/personReferenceInfo':(BuildContext context) => new PersonReferenceInfo(),
             '/personBankCardInfo':(BuildContext context) => new PersonBankCardInfo(),
             '/personPhoneNumber':(BuildContext context) => new PersonPhoneNumber(),
-//            '/personCustomerService':(BuildContext context) => new PersonCustomerService(url,'客服'),
             '/personCustomerService':(BuildContext context) => new PersonCustomerService2(),
             '/personModifyPassword':(BuildContext context) => new PersonModifyPassword(),
             '/personDebit':(BuildContext context) => new PersonDebit(),
             '/personRepayment':(BuildContext context) => new PersonRepayment(),
-            '/loginAndRegister':(BuildContext context) => new LoginAndRegister(true),
+            '/login':(BuildContext context) => new Login(),
+            '/register':(BuildContext context) => new Register(),
           },
         );
       })

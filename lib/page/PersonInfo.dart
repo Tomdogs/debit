@@ -27,7 +27,7 @@ class PersonInfoState extends State<PersonInfo> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getUserInfo();
+//    _getUserInfo();
   }
   void _getUserInfo()async{
     UserDao.getUserById(context).then((res){
@@ -131,7 +131,7 @@ class PersonInfoState extends State<PersonInfo> {
                       ],
                     ),
                   ),
-                  new Padding(padding: EdgeInsets.all(30.0)),
+                  /*new Padding(padding: EdgeInsets.all(30.0)),
                   new Container(
                     margin: EdgeInsets.all(10),
                     child: new FlexButton(
@@ -155,7 +155,7 @@ class PersonInfoState extends State<PersonInfo> {
 
                       },
                     ),
-                  ),
+                  ),*/
                 ],
               ),
             );

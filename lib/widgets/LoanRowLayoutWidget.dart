@@ -71,19 +71,19 @@ class LoanRowLayoutWidgetState extends State<LoanRowLayoutWidget> {
 
                   new Padding(
                       padding: EdgeInsets.all(8),
-                      child:new Text('订单编号 ${widget.orderNumber}',style:new TextStyle(color: Colors.blue,fontSize: 15)),
+                      child:new Text('订单编号 ${widget.orderNumber}',style:new TextStyle(color: Colors.blue,fontSize: 16)),
                       ),
 
                   new Padding(
                     padding: EdgeInsets.all(8),
-                    child:new Text('借款金额 ${widget.orderBorrowMoney}'),
+                    child:new Text('借款金额 ${widget.orderBorrowMoney}',style:new TextStyle(fontSize: 16)),
                   ),
                   AppDivider.thinDivider(),
 
 
                   new Padding(
                     padding: EdgeInsets.all(8),
-                    child:new Text('借款期限 ${widget.orderBorrowDeadlline}'),
+                    child:new Text('借款期限 ${widget.orderBorrowDeadlline}',style:new TextStyle(fontSize: 16)),
                   ),
 
                   AppDivider.thinDivider(),
@@ -91,7 +91,7 @@ class LoanRowLayoutWidgetState extends State<LoanRowLayoutWidget> {
 
                   new Padding(
                     padding: EdgeInsets.all(8),
-                    child: new Text('借款状态 ${_getOrderBorrowStatus(widget.orderBorrowStatus)}'),
+                    child: new Text('借款状态 ${_getOrderBorrowStatus(widget.orderBorrowStatus)}',style: TextStyle(fontSize: 16,color: Colors.red),),
                   ),
 
                   /*AppDivider.thinDivider(),
@@ -103,7 +103,7 @@ class LoanRowLayoutWidgetState extends State<LoanRowLayoutWidget> {
 
                   new Padding(
                     padding: EdgeInsets.all(8),
-                    child: new Text('收款状态 ${widget.orderStatus == 1 ? '以收款':'未收款'}'),
+                    child: new Text('收款状态 ${widget.orderStatus == 1 ? '以收款':'未收款'}',style:new TextStyle(fontSize: 16)),
                   ),
 
 
@@ -113,7 +113,7 @@ class LoanRowLayoutWidgetState extends State<LoanRowLayoutWidget> {
                   child: new Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      new Text('到期还款 ${widget.orderRefundFigure}',style:new TextStyle(color: Colors.red,fontSize: 15),),
+                      new Text('到期还款 ${widget.orderRefundFigure}',style:new TextStyle(color: Colors.red,fontSize: 16),),
                     ],
                   )
               ),

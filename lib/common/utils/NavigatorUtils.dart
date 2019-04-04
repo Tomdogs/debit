@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:debit/page/HomePage.dart';
-import 'package:debit/page/LoginAndRegister.dart';
+import 'package:debit/page/Login.dart';
 import 'package:debit/page/PersonInfo.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +29,7 @@ class NavigatorUtils {
 
   ///登录页
   static goLogin(BuildContext context) {
-    Navigator.pushReplacementNamed(context, LoginAndRegister.sName);
+    Navigator.pushReplacementNamed(context, Login.sName);
   }
 
   ///个人中心

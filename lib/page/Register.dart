@@ -14,17 +14,13 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
 ///登录和注册页面
-class LoginAndRegister extends StatefulWidget {
-  static final String sName = "login";
-  final bool isLogin;
-
-  LoginAndRegister(this.isLogin);
-
+class Register extends StatefulWidget {
+  static final String sName = "register";
   @override
-  _LoginAndRegisterState createState() => _LoginAndRegisterState();
+  _RegisterState createState() => _RegisterState();
 }
 
-class _LoginAndRegisterState extends State<LoginAndRegister> {
+class _RegisterState extends State<Register> {
   var _phoneNumber = "";
   var _user_password = "";
   var _netRoom_password = "";
@@ -38,7 +34,7 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
   int smsCode;
 
 
-  _LoginAndRegisterState(){
+  _RegisterState(){
 
     _ticker = new Ticker((Duration duration){
       setState(() {
@@ -88,7 +84,7 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
           },
           child: Scaffold(
               appBar: new AppBar(
-                title: widget.isLogin ? new Text("登录") : new Text("注册"),
+                title: new Text("注册"),
                 centerTitle: true,
               ),
               body: new ListView(
@@ -118,70 +114,65 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
                             keyboardType: TextInputType.number,
                           ),
                           new Padding(padding: new EdgeInsets.all(10.0)),
-                          new Offstage(
-                            offstage: widget.isLogin, //这里控制
-                            child: new Row(
-                              children: <Widget>[
-                                new Expanded(
-                                  flex: 3,
-                                  child:  new InputWidget(
-                                    hintText: "请输入验证码",
-                                    iconData: Icons.verified_user,
-                                    onChanged: (String value) {
-                                      _netRoom_password = value;
-                                    },
-                                    controller: netPwController,
+                          new Row(
+                            children: <Widget>[
+                              new Expanded(
+                                flex: 3,
+                                child:  new InputWidget(
+                                  hintText: "请输入验证码",
+                                  iconData: Icons.verified_user,
+                                  onChanged: (String value) {
+                                    _netRoom_password = value;
+                                  },
+                                  controller: netPwController,
 //                                    visible: widget.isLogin,
-                                    keyboardType: TextInputType.number,
-                                  ),
+                                  keyboardType: TextInputType.number,
                                 ),
-                                new Expanded(
-                                  flex: 2,
-                                  child: new FlatButton(
-                                    textColor: Theme.of(context).primaryColor,
-                                    child: new Text('$_time'),
-                                    onPressed: (){
-                                      if(_ticker.isTicking){
-                                        /*_ticker.stop(canceled: true);
+                              ),
+                              new Expanded(
+                                flex: 2,
+                                child: new FlatButton(
+                                  textColor: Theme.of(context).primaryColor,
+                                  child: new Text('$_time'),
+                                  onPressed: (){
+                                    if(_ticker.isTicking){
+                                      /*_ticker.stop(canceled: true);
                                         setState(() {
                                           _time = "开始";
                                         });*/
-                                        print("验证码 正在运行");
-                                      }else{
+                                      print("验证码 正在运行");
+                                    }else{
 
-                                        if (_phoneNumber == null ||
-                                            _phoneNumber.length == 0) {
-                                          Toast.toast(context, "请正确填写手机号");
-                                          return;
-                                        }
-
-                                        UserDao.getSms(_phoneNumber.trim(),context).then((res){
-                                          if(res.data != null && res.result){
-                                            _ticker.start();//开始计时
-                                            print("点击了获取验证码按钮");
-
-                                            print("验证码:${res.data}");
-                                            smsCode = res.data;
-                                            Toast.toast(context, "验证码发送成功");
-                                          }else if(!res.result){
-                                            Toast.toast(context, res.data.toString());
-                                          }
-
-                                        });
+                                      if (_phoneNumber == null || _phoneNumber.length == 0) {
+                                        print("验证码的手機號：$_phoneNumber");
+                                        Toast.toast(context, "请正确填写手机号");
+                                        return;
                                       }
 
-                                    },
-                                  ),
+                                      UserDao.getSms(_phoneNumber.trim(),context).then((res){
+                                        if(res.data != null && res.result){
+                                          _ticker.start();//开始计时
+                                          print("点击了获取验证码按钮");
+
+                                          print("验证码:${res.data}");
+                                          smsCode = res.data;
+                                          Toast.toast(context, "验证码发送成功");
+                                        }else if(!res.result){
+                                          Toast.toast(context, res.data.toString());
+                                        }
+
+                                      });
+                                    }
+
+                                  },
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-
-
 
                           new Padding(padding: new EdgeInsets.all(10.0)),
                           new InputWidget(
-                            hintText: "请输入用户密码",
+                            hintText: "请输入6-12位密码",
                             iconData: Icons.lock,
                             obscureText: true,
                             onChanged: (String value) {
@@ -192,48 +183,19 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
                           
                           new Padding(padding: new EdgeInsets.all(30.0)),
                           new FlexButton(
-                            text: widget.isLogin ? "登录" : "注册",
+                            text:  "注册",
                             color: Theme.of(context).primaryColor,
                             textColor: Colors.white,
                             onPress: () {
 
-                              if (widget.isLogin) {
                                 if (_phoneNumber == null ||
-                                    _phoneNumber.length == 0) {
+                                    _phoneNumber.length == 0 || !CommonUtils.isChinaPhoneLegal(_phoneNumber.trim())) {
+                                  Toast.toast(context, "手机号输入有误，请核实后输入!");
                                   return;
                                 }
                                 if (_user_password == null ||
-                                    _user_password.length == 0) {
-                                  return;
-                                }
-                                CommonUtils.showLoadingDialog(context);
-                                UserDao.login(_phoneNumber.trim(), _user_password.trim(), store,context).then((res){
-                                  print("login " + res.toString());
-                                  Toast.toast(context, "登录成功！");
-                                  if(res.data != null && res.result){
-                                    new Future.delayed(const Duration(seconds: 1), () {
-                                      Navigator.pop(context);
-                                      Navigator.pushReplacementNamed(context, '/managerHome');
-                                    });
-
-                                  }else if(res.data != null){
-                                    Navigator.pop(context);
-                                    Toast.toast(context, res.data.toString());
-                                  }else{
-                                    Navigator.pop(context);
-                                    Toast.toast(context, '网络错误！');
-                                  }
-                                });
-
-
-
-                              } else {
-                                if (_phoneNumber == null ||
-                                    _phoneNumber.length == 0) {
-                                  return;
-                                }
-                                if (_user_password == null ||
-                                    _user_password.length == 0) {
+                                    _user_password.length == 0 || _user_password.length < 6 || _user_password.length > 12) {
+                                  Toast.toast(context, "密码长度为6-12位！");
                                   return;
                                 }
                                 if (_netRoom_password == null ||
@@ -263,9 +225,17 @@ class _LoginAndRegisterState extends State<LoginAndRegister> {
                                   }
                                 });
                               }
-                            },
                           ),
-                          new Padding(padding: new EdgeInsets.all(30.0)),
+                          new Padding(padding: new EdgeInsets.only(top:10.0)),
+                          new FlexButton(
+                              text:  "登录",
+                              color: Theme.of(context).primaryColor,
+                              textColor: Colors.white,
+                              onPress: () {
+                                Navigator.pushReplacementNamed(context, '/login');
+                              }
+
+                          )
                         ],
                       ),
                     ),

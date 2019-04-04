@@ -123,7 +123,7 @@ class _TabBarState extends State<TabBarWidget>
             type: BottomNavigationBarType.fixed,
             currentIndex: _tabIndex,
             onTap: (index) {
-              print("onTap当前为$index");
+//              print("onTap当前为$index");
               _pageController.jumpToPage(index);
             }),
 

@@ -110,7 +110,8 @@ flutter:
     - assets/images/ic_nav_my_pressed.png
     - assets/images/ic_nav_tweet_actived.png
     - assets/images/ic_nav_tweet_normal.png
-    - assets/images/guidePage.png
+    - assets/images/ic_nav_discover_actived.png
+    - assets/images/ic_nav_discover_normal.png
 
 
     # province data

@@ -212,7 +212,8 @@ class PersonBankCardInfoState extends State<PersonBankCardInfo> {
           Toast.toast(context, "信息上传成功！");
           new Future.delayed(const Duration(seconds: 1), () {
             Navigator.pop(context);
-            Navigator.pushReplacementNamed(context, '/personInfo');
+//            Navigator.pushReplacementNamed(context, '/personInfo');
+            Navigator.pop(context);//销毁当前页
             return true;
           });
           User newUser = new User(userID:user.userID,phoneNumber:user.phoneNumber,userPassword:user.userPassword,
@@ -262,6 +263,9 @@ class PersonBankCardInfoState extends State<PersonBankCardInfo> {
         ),
         body: new StoreBuilder<ReduxState>(
           builder: (context,store){
+
+            User user = store.state.userInfo;
+
             return new Container(
               decoration: BoxDecoration(color: AppColors.backgroundColor),
               child: new ListView(
@@ -292,11 +296,17 @@ class PersonBankCardInfoState extends State<PersonBankCardInfo> {
                         new Container(
                           margin: EdgeInsets.all(10),
                           child: new FlexButton(
+//                            visible: user.flagThree == 1?true:false,
                             textColor: Colors.white,
-                            color: Theme.of(context).primaryColor,
-                            text: "提交",
+                            color: user.flagThree == 1?Colors.grey:Theme.of(context).primaryColor,
+                            text: user.flagThree == 1?"审核通过":"提交",
                             onPress: () {
-                              _formSubmitted(store);
+                              if(user.flagThree == 1){
+                                Toast.toast(context, '审核以通过，如需修改信息请联系客服');
+                              }else{
+                                _formSubmitted(store);
+                              }
+
                             },
                           ),
                         ),

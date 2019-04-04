@@ -116,7 +116,8 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
           Toast.toast(context, "信息上传成功！");
           new Future.delayed(const Duration(seconds: 1), () {
             Navigator.pop(context);
-            Navigator.pushReplacementNamed(context, '/managerHome');
+//            Navigator.pushReplacementNamed(context, '/managerHome');
+            Navigator.pop(context);//销毁当前页
             return true;
           });
         }else{
@@ -164,6 +165,7 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
         ),
         body: new StoreBuilder<ReduxState>(
           builder: (context,store){
+            User user = store.state.userInfo;
             return new Container(
               decoration: BoxDecoration(color: AppColors.backgroundColor),
               child: new ListView(
@@ -185,10 +187,12 @@ class PersonModifyPasswordState extends State<PersonModifyPassword> {
                           margin: EdgeInsets.all(10),
                           child: new FlexButton(
                             textColor: Colors.white,
-                            color: Theme.of(context).primaryColor,
+                            color:  Theme.of(context).primaryColor,
                             text: "完成",
                             onPress: () {
-                              _formSubmitted(store);
+
+                                _formSubmitted(store);
+
                             },
                           ),
                         ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:debit/common/config/Config.dart';
 import 'package:debit/common/dao/DaoResult.dart';
 import 'package:debit/common/model/BorrowSetting.dart';
+import 'package:debit/common/model/MarqueeMessage.dart';
 import 'package:debit/common/model/User.dart';
 import 'package:debit/common/model/UserData.dart';
 import 'package:debit/common/model/UserBorrowRepay.dart';
@@ -160,7 +161,8 @@ class UserDao {
         print("查询用户资料信息3：${ data.bankCardIdcard}");
         return new DataResult(data, true);
       } else {
-        return new DataResult(null, false);
+        var msg = userDataMap['msg'];
+        return new DataResult(msg, false);
       }
 
     }
@@ -452,6 +454,34 @@ class UserDao {
         return new DataResult(msg, true);
       } else {
         return new DataResult(msg, false);
+      }
+    }
+
+  }
+
+  ///跑马灯
+  static getSevenDaysDatas(context) async {
+    var res = await HttpManager.netFetch(Address.getSevenDaysDatas(),
+        null, null, new Options(method: "get"),context,isJson: false);
+
+    if (res != null && res.result) {
+      print("跑马灯：${res.data.toString()}");
+
+      /**
+       *  Map borrowSettingMap = json.decode(res.data.toString());
+          var borrowSetting = new BorrowSetting.fromJson(borrowSettingMap);
+       */
+      Map infoMap = json.decode(res.data.toString());
+
+      MarqueeMessage marqueeMessage = new MarqueeMessage.fromJson(infoMap);
+
+
+      if (marqueeMessage.code == Code.STATUS_SUCCESS) {
+//        List<MarqueeMessage> msgList = new List<MarqueeMessage>.from(msg);
+//        var msgList = MarqueeMessage.fromJson(msg);
+        return new DataResult(marqueeMessage.msg, true);
+      } else {
+        return new DataResult("系统异常", false);
       }
     }
 

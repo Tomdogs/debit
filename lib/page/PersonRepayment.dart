@@ -57,7 +57,7 @@ class PersonRepaymentState extends State<PersonRepayment>{
   getBody() {
     if (showLoadingDialog()) {
       if(!havaData){
-        return new Center(child:new Text("暂时还没有数据"));
+        return new Center(child:new Text("暂无还款数据"));
       }
       return getProgressDialog();
     } else {
